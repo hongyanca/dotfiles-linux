@@ -56,6 +56,12 @@ sudo chown -R $USER_GRP /usr/local/include
 sudo chown -R $USER_GRP /usr/local/share
 sudo chown -R $USER_GRP /usr/local/share/man/
 echo "Installing Node.js global packages..."
+npm cache clean --force
+rm -rf "$HOME/.npm-packages/lib/node_modules/tree-sitter-cli"
+rm -rf "$HOME/.npm-packages/lib/node_modules/neovim"
+rm -rf "$HOME/.npm-packages/lib/node_modules/pyright"
+rm -rf "$HOME/.npm-packages/lib/node_modules/n"
+rm -rf "$HOME/.npm-packages/lib/node_modules/npm-check"
 npm install tree-sitter-cli neovim pyright n npm-check -g
 }
 
