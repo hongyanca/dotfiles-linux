@@ -47,16 +47,27 @@ install_required_package() {
   if [[ "$id_like" == *"rhel"* ]]; then
     echo "Detected RHEL-based distribution. Using dnf to install $package."
     sudo dnf upgrade --refresh -y
-    sudo dnf install -y "util-linux-user" "zsh-syntax-highlighting" "$package"
+    sudo dnf install -y yum-utils gcc make python3-pip util-linux-user zsh-syntax-highlighting "$package"
+    python3 -m pip install --upgrade pip
+    python3 -m pip install --user --upgrade pynvim
+    # Use `sudo dnf module list nodejs` to list available Node.js versions
+    # Use `sudo dnf module reset nodejs:20/common` to reset the default version
+    sudo dnf module install nodejs:22/common
   elif [[ "$id_like" == *"debian"* ]]; then
     echo "Detected Debian-based distribution. Using apt-get to install $package."
     sudo apt-get update
-    sudo apt-get install -y "passwd" "zsh-syntax-highlighting" "$package"
+    sudo apt-get install -y gcc make libbz2-dev python3-pip passwd zsh-syntax-highlighting "$package"
+    python3 -m pip install --upgrade pip --break-system-packages
+    python3 -m pip install --user --upgrade pynvim --break-system-packages
+    # Install Node.js 22.x
+    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt-get install -y nodejs
   elif [[ "$id_like" == *"arch"* ]]; then
     echo "Detected Arch-based distribution. Using pacman to install $package."
     sudo pacman -S --needed archlinux-keyring
     sudo pacman -Syu
-    sudo pacman -S --needed --noconfirm "$package" util-linux zsh-syntax-highlighting
+    sudo pacman -S --needed --noconfirm "$package" util-linux zsh-syntax-highlighting gcc make python python-pip lua nodejs npm
+    python3 -m pip install --upgrade pip --break-system-packages
+    python3 -m pip install --user --upgrade pynvim --break-system-packages
     sudo rm -f /usr/share/zsh-syntax-highlighting
     sudo ln -s /usr/share/zsh/plugins/zsh-syntax-highlighting /usr/share/zsh-syntax-highlighting
     # Arch Linux is a rolling distro, so it already provides the latest packages
@@ -77,6 +88,22 @@ for package in "${REQUIRED_PKGS[@]}"; do
   install_required_package "$package"
 done
 
+# Install npm packages globally without sudo
+mkdir -p "$HOME/.npm-packages"
+npm config set prefix "$HOME/.npm-packages"
+export NPM_PACKAGES="$HOME/.npm-packages"
+export PATH="$PATH:$NPM_PACKAGES/bin"
+USER_GRP="$(id -un):$(id -gn)"
+sudo mkdir -p /usr/local/n
+sudo chown -R $USER_GRP /usr/local/n
+sudo chown -R $USER_GRP /usr/local/lib
+sudo chown -R $USER_GRP /usr/local/bin
+sudo chown -R $USER_GRP /usr/local/include
+sudo chown -R $USER_GRP /usr/local/share
+sudo chown -R $USER_GRP /usr/local/share/man/
+echo "Installing Node.js global packages..."
+npm install tree-sitter-cli neovim pyright n npm-check -g
+
 # Function to install the latest release of a GitHub repository
 # Usage: install_latest_release "repo" "cmd_local_ver" "asset_suffix" ["alt_util_name"] ["symlink_name"]
 # Parameters:
@@ -88,7 +115,7 @@ done
 # Example: install_latest_release "junegunn/fzf" "linux_amd64.tar.gz"
 # Example: install_latest_release "BurntSushi/ripgrep" "x86_64-unknown-linux-musl.tar.gz" "rg"
 # Example: install_latest_release "dundee/gdu" "linux_amd64_static.tgz" "gdu_linux_amd64_static" "gdu"
-install_latest_release() {
+install_latest_release_from_gh() {
   local repo=$1 cmd_local_ver=$2 asset_suffix=$3 alt_util_name=$4 symlink_name=$5
   local installed_ver latest_ver latest_release asset_filename asset_url decomp_dir
   local util_bin_fn util_name util_path
@@ -170,44 +197,44 @@ install_latest_release() {
   return 0
 }
 
-install_latest_release "aristocratos/btop" \
+install_latest_release_from_gh "aristocratos/btop" \
   "btop --version | head -1 | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
   "x86_64-linux-musl.tbz"
-install_latest_release "junegunn/fzf" \
+install_latest_release_from_gh "junegunn/fzf" \
   "fzf --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
   "linux_amd64.tar.gz"
-install_latest_release "sharkdp/fd" \
+install_latest_release_from_gh "sharkdp/fd" \
   "fd --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
   "x86_64-unknown-linux-gnu.tar.gz"
-install_latest_release "sharkdp/bat" \
+install_latest_release_from_gh "sharkdp/bat" \
   "bat --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
   "x86_64-unknown-linux-gnu.tar.gz"
-install_latest_release "jesseduffield/lazygit" \
+install_latest_release_from_gh "jesseduffield/lazygit" \
   "lazygit --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -1" \
   "Linux_x86_64.tar.gz"
-install_latest_release "dandavison/delta" \
+install_latest_release_from_gh "dandavison/delta" \
   "delta --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
   "x86_64-unknown-linux-gnu.tar.gz"
-install_latest_release "lsd-rs/lsd" \
+install_latest_release_from_gh "lsd-rs/lsd" \
   "lsd --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
   "x86_64-unknown-linux-gnu.tar.gz"
-install_latest_release "BurntSushi/ripgrep" \
+install_latest_release_from_gh "BurntSushi/ripgrep" \
   "rg --version | head -1 | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
   "x86_64-unknown-linux-musl.tar.gz" "rg"
-install_latest_release "dundee/gdu" \
+install_latest_release_from_gh "dundee/gdu" \
   "gdu --version | head -1 | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
   "linux_amd64_static.tgz" "gdu_linux_amd64_static" "gdu"
-install_latest_release "ajeetdsouza/zoxide" \
+install_latest_release_from_gh "ajeetdsouza/zoxide" \
   "zoxide --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
   "x86_64-unknown-linux-musl.tar.gz"
-install_latest_release "fastfetch-cli/fastfetch" \
+install_latest_release_from_gh "fastfetch-cli/fastfetch" \
   "fastfetch --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
   "linux-amd64.tar.gz"
-install_latest_release "sxyazi/yazi" \
+install_latest_release_from_gh "sxyazi/yazi" \
   "yazi --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
   "x86_64-unknown-linux-musl.zip"
 # Install yazi cli tool ya for plugin/flavor management
-install_latest_release "sxyazi/yazi" \
+install_latest_release_from_gh "sxyazi/yazi" \
   "ya --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
   "x86_64-unknown-linux-musl.zip" "ya"
 
