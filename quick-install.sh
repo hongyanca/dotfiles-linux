@@ -45,7 +45,6 @@ function remove_conflicting_scripts() {
     return 1
   fi
 
-
   # Check if target directory exists, create if not
   if [ ! -d "$target_dir" ]; then
     mkdir -p "$target_dir"
@@ -55,10 +54,8 @@ function remove_conflicting_scripts() {
     fi
   fi
 
-
   # Find all '.sh' files in the scripts directory, extract only the filename
   readarray -t script_files < <(find "$scripts_dir" -maxdepth 1 -type f -name "*.sh" -printf "%f\n")
-
 
   # Check if any script found
   if [ ${#script_files[@]} -eq 0 ]; then

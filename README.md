@@ -13,7 +13,7 @@ This repo contains configuration files for tools and applications I use daily, s
 - **Terminal Tools**: `tmux`
 - **Version Control Tools**: `git`
 - **File Manager**: `yazi` (a fast, modern terminal file manager)
-- **Utility Shell Scripts**: Handy scripts for everyday tasks (e.g., backups, cleanup, automation)
+- **Utility Shell Scripts**: Handy scripts for everyday tasks (e.g., update system, install Neovim, install modern alternative Linux utilities)
 - And more!
 
 
@@ -24,7 +24,7 @@ GNU Stow is a powerful symlink manager that simplifies the process of linking do
 
 
 
-### How It Works:
+### How It Works 🤔
 
 1. Each set of configuration files lives in its own directory (e.g., `neovim/`, `zsh/`, `fish`).
 2. Running `stow <directory>` creates symlinks in your `$HOME` directory (or any target location).
@@ -33,6 +33,36 @@ GNU Stow is a powerful symlink manager that simplifies the process of linking do
 
 
 ### Quick Start 🚀
+
+> [!CAUTION]
+>
+> Running this script without understanding it could lead to unexpected and potentially damaging changes to your system. It is highly recommended that you carefully review the script and these dotfiles before running it.
+>
+> This script will modify your system configuration using dotfiles and GNU Stow. If you do **NOT** fully understand what this script does and how Stow works, **DO NOT EXECUTE THE FOLLOWING COMMAND**.
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/hongyanca/dotfiles-linux/refs/heads/main/quick-install.sh)" 
+```
+
+Change default shell to `fish`
+
+```bash
+chsh -s $(which fish)
+# Or
+sudo chsh -s $(which fish) $USER
+```
+
+Change default shell to `zsh`
+
+```bash
+chsh -s $(which zsh)
+# Or
+sudo chsh -s $(which zsh) $USER
+```
+
+
+
+### Step by Step Installation 🔢🛠️
 
 1. **Clone the Repository**:
 
@@ -106,13 +136,8 @@ GNU Stow is a powerful symlink manager that simplifies the process of linking do
      
      cd ~/.dotfiles
      stow zsh
-     
-     # Change default shell to zsh
-     chsh -s $(which zsh)
-     # Or
-     sudo chsh -s $(which zsh) $USER
      ```
-   
+     
    - **fish**
    
      ```bash
@@ -121,13 +146,8 @@ GNU Stow is a powerful symlink manager that simplifies the process of linking do
      
      cd ~/.dotfiles
      stow fish
-     
-     # Change default shell to fish
-     chsh -s $(which fish)
-     # Or
-     sudo chsh -s $(which fish) $USER
      ```
-   
+     
    - **yazi**
    
      ```bash
@@ -146,7 +166,7 @@ GNU Stow is a powerful symlink manager that simplifies the process of linking do
      cd ~/.dotfiles
      stow scripts
      ```
-
+   
 4. **Undo a Configuration**:
 
    ```bash
@@ -168,7 +188,8 @@ GNU Stow is a powerful symlink manager that simplifies the process of linking do
 ├── zsh/                   # Zsh configurations
 ├── fish/                  # Fish configurations
 ├── yazi/                  # Yazi terminal file manager configurations
-└── scripts/               # Handy utility shell scripts
+├── scripts/               # Handy utility shell scripts
+└── quick-install.sh       # A single script that does all
 ```
 
 
