@@ -16,6 +16,6 @@ then
   printf "\e[34mcurl -fsSL https://raw.githubusercontent.com/hongyanca/dotfiles-linux/refs/heads/main/scripts/scripts/install-neovim.sh\e[0m\n"
 else
   # Run nvim in headless mode and quit if nvim is found
-  nvim --headless -c 'quitall'
-  printf "\e[34mDon't panic if there are installtion errors.\e[0m\n"
+  NVIM_APPNAME=nvim nvim --headless -c 'quitall'
+  printf "\n\e[34mDon't panic if there are installtion errors.\e[0m\n\n"
 fi
