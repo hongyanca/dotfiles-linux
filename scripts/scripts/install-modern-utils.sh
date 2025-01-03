@@ -127,11 +127,11 @@ install_required_package() {
   fi
 
   # Check if LINUX_DISTRO contains 'rhel' or 'debian' and install the package
-  if [[ "LINUX_DISTRO" == "rhel" ]]; then
+  if [[ $LINUX_DISTRO == "rhel" ]]; then
     sudo dnf install -y "$package"
-  elif [[ "LINUX_DISTRO" == "debian" ]]; then
+  elif [[ $LINUX_DISTRO == "debian" ]]; then
     sudo apt-get install -y "$package"
-  elif [[ "LINUX_DISTRO" == "arch" ]]; then
+  elif [[ $LINUX_DISTRO == "arch" ]]; then
     :
   else
     echo "Unsupported distribution."
