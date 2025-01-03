@@ -41,6 +41,25 @@ get_distro() {
 get_distro
 
 
+install_npm_packages() {
+# Install npm packages globally without sudo
+mkdir -p "$HOME/.npm-packages"
+npm config set prefix "$HOME/.npm-packages"
+export NPM_PACKAGES="$HOME/.npm-packages"
+export PATH="$PATH:$NPM_PACKAGES/bin"
+USER_GRP="$(id -un):$(id -gn)"
+sudo mkdir -p /usr/local/n
+sudo chown -R $USER_GRP /usr/local/n
+sudo chown -R $USER_GRP /usr/local/lib
+sudo chown -R $USER_GRP /usr/local/bin
+sudo chown -R $USER_GRP /usr/local/include
+sudo chown -R $USER_GRP /usr/local/share
+sudo chown -R $USER_GRP /usr/local/share/man/
+echo "Installing Node.js global packages..."
+npm install tree-sitter-cli neovim pyright n npm-check -g
+}
+
+
 REQUIRED_PKGS=("wget" "curl" "zsh" "fish" "stow" "tar" "jq" "unzip" "bzip2" "make" "git" "xclip")
 REQ_PKGS_STR="${REQUIRED_PKGS[*]}"
 
@@ -56,6 +75,7 @@ if [[ $LINUX_DISTRO == "rhel" ]]; then
   # Use `sudo dnf module list nodejs` to list available Node.js versions
   # Use `sudo dnf module reset nodejs:20/common` to reset the default version
   sudo dnf module install nodejs:22/common
+  install_npm_packages
 elif [[ $LINUX_DISTRO == "debian" ]]; then
   echo "Detected Debian-based distribution. Using apt-get to install $package."
   sudo apt-get update
@@ -64,6 +84,7 @@ elif [[ $LINUX_DISTRO == "debian" ]]; then
   python3 -m pip install --user --upgrade pynvim --break-system-packages
   # Install Node.js 22.x
   curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt-get install -y nodejs
+  install_npm_packages
 elif [[ $LINUX_DISTRO == "arch" ]]; then
   echo "Detected Arch-based distribution. Using pacman to install $package."
   sudo pacman -S --needed --noconfirm archlinux-keyring
@@ -73,6 +94,7 @@ elif [[ $LINUX_DISTRO == "arch" ]]; then
   sudo ln -s /usr/share/zsh/plugins/zsh-syntax-highlighting /usr/share/zsh-syntax-highlighting
   python3 -m pip install --upgrade pip --break-system-packages
   python3 -m pip install --user --upgrade pynvim --break-system-packages
+  install_npm_packages
   sudo pacman -S --needed --noconfirm $REQ_PKGS_STR
   # Arch Linux is a rolling distro, so it already provides the latest packages
   # Don't need to install binary releases for GitHub
@@ -116,23 +138,6 @@ install_required_package() {
     return 1
   fi
 }
-
-
-# Install npm packages globally without sudo
-mkdir -p "$HOME/.npm-packages"
-npm config set prefix "$HOME/.npm-packages"
-export NPM_PACKAGES="$HOME/.npm-packages"
-export PATH="$PATH:$NPM_PACKAGES/bin"
-USER_GRP="$(id -un):$(id -gn)"
-sudo mkdir -p /usr/local/n
-sudo chown -R $USER_GRP /usr/local/n
-sudo chown -R $USER_GRP /usr/local/lib
-sudo chown -R $USER_GRP /usr/local/bin
-sudo chown -R $USER_GRP /usr/local/include
-sudo chown -R $USER_GRP /usr/local/share
-sudo chown -R $USER_GRP /usr/local/share/man/
-echo "Installing Node.js global packages..."
-npm install tree-sitter-cli neovim pyright n npm-check -g
 
 
 echo "Installing required packages..."
