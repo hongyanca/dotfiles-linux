@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 echo "Clone the Repository..."
+
 rm -rf ~/.dotfiles
 git clone --depth=1 --single-branch --branch main https://github.com/hongyanca/dotfiles-linux.git ~/.dotfiles
 
@@ -59,22 +60,21 @@ function remove_conflicting_scripts() {
 
   # Check if any script found
   if [ ${#script_files[@]} -eq 0 ]; then
-     echo "Info: No .sh scripts found under $scripts_dir."
-     return 0
+    echo "Info: No .sh scripts found under $scripts_dir."
   fi
 
   # Loop through the file names and remove corresponding files in ~/scripts
   for script_file in "${script_files[@]}"; do
-     local target_file="$target_dir/$script_file"
-     if [ -f "$target_file" ]; then
-        rm -f "$target_file"
-        if [ $? -ne 0 ]; then
-           echo "Error: Failed to remove file: $target_file" >&2
-        else
-          echo "Removed: $target_file"
-        fi
-     else
-       echo "Info: Target file not found, skipping $target_file."
+    local target_file="$target_dir/$script_file"
+    if [ -f "$target_file" ]; then
+      rm -f "$target_file"
+      if [ $? -ne 0 ]; then
+        echo "Error: Failed to remove file: $target_file" >&2
+      else
+        echo "Script with duplicated name removed: $target_file"
+      fi
+    else
+      :
      fi
   done
   return 0
@@ -82,5 +82,12 @@ function remove_conflicting_scripts() {
 remove_conflicting_scripts
 stow scripts
 
+echo
 echo "🌟 Enjoy the new environment! 🌟"
+echo
+echo "# Change default shell to fish"
+echo "sudo chsh -s $(which fish) $USER"
+echo
+echo "# Change default shell to zsh"
+echo "sudo chsh -s $(which zsh) $USER"
 echo
