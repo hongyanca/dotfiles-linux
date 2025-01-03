@@ -119,6 +119,11 @@ post_install_actions() {
     printf "\e[32mNeovim %s has been installed to %s/bin/nvim\e[0m\n" "$installed_version" "$INSTALL_DIR"
   fi
 
+  # Don't create a symlink on macOS
+  if [ "$OS" = "Darwin" ]; then
+    return
+  fi
+
   # Check if /usr/bin/nvim is a symlink
   if [ -L "/usr/bin/nvim" ]; then
     # Delete the existing symlink
