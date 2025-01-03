@@ -9,6 +9,13 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+print_post_install_info() {
+  echo ""
+  echo "Examples of shell rc files to integrate these modern utilities:"
+  echo -e "${BLUE}https://github.com/hongyanca/dotfiles-linux${NC}"
+  echo ""
+}
+
 # Function to install a required package based on the distribution
 install_required_package() {
   package=$1
@@ -51,7 +58,7 @@ install_required_package() {
     sudo pacman -Syu
     sudo pacman -S --needed --noconfirm "$package"
     # Arch Linux is a rolling distro, so it already provides the latest packages
-    sudo pacman -S --needed --noconfirm btop fzf fd bat git-delta lazygit lsd ripgrep gdu zoxide fastfetch yazi neovim
+    sudo pacman -S --needed --noconfirm btop fzf fd bat git-delta lazygit lsd ripgrep gdu zoxide fastfetch yazi
     # Don't need to install binary releases for GitHub
     print_post_install_info
     exit 0
@@ -202,11 +209,4 @@ install_latest_release "sxyazi/yazi" \
   "ya --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
   "x86_64-unknown-linux-musl.zip" "ya"
 
-print_post_install_info() {
-  # Display recommended post-installation instructions
-  echo ""
-  echo "Instructions for setting up shell rc files:"
-  echo -e "${BLUE}https://github.com/hongyanca/dotfiles-linux${NC}"
-  echo ""
-}
 print_post_install_info
