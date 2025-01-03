@@ -39,6 +39,7 @@ install_version() {
   local version_type="$1"
   local download_url
   local version
+  local display_version
 
   if [ "$version_type" = "nightly" ] || [ "$version_type" = "prerelease" ]; then
     # Fetch the JSON response using curl
@@ -47,10 +48,13 @@ install_version() {
     # Extract the 'body' field of the latest prerelease and filter out the version string
     version=$(echo "$response" | jq -r '.[] | select(.prerelease) | .body' | grep -Eo 'NVIM\s+\S+')
     download_url=$(echo "$response" | jq -r ".[] | select(.prerelease) | .assets[] | select(.name == \"$PACKAGE_NAME\") | .browser_download_url" | head -n 1)
+    display_version="The latest Neovim $version_type version is: $version"
   elif [ "$version_type" = "latest" ]; then
     response=$(curl -s "$GITHUB_API_URL/latest")
     version=$(echo "$response" | jq -r '.tag_name')
+    version="NVIM $version"
     download_url=$(echo "$response" | jq -r ".assets[] | select(.name == \"$PACKAGE_NAME\") | .browser_download_url")
+    display_version="The latest Neovim release version is: $version"
   else
     echo "Invalid version type: $version_type"
     return 1
@@ -63,12 +67,12 @@ install_version() {
 
   # Get installed Neovim version
   if [ -x "$INSTALL_DIR"/bin/nvim ]; then
-    installed_version=$(NVIM_APPNAME=nvim-dev "$INSTALL_DIR"/bin/nvim --version | head -n 1 | grep -Eo 'NVIM\s+\S+')
+    installed_version=$("$INSTALL_DIR"/bin/nvim --version | head -n 1 | grep -Eo 'NVIM\s+\S+')
   else
     installed_version=""
   fi
 
-  echo "The latest Neovim $version_type version is: $version"
+  echo "$display_version"
   echo "Installed Neovim version is:  $installed_version"
 
   # Compare installed version with the latest prerelease version
