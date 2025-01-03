@@ -21,12 +21,6 @@ alias lt='ls --tree'
 # Default nvim - LazyVim
 # alias nvim='NVIM_APPNAME=nvim-lazyvim /usr/bin/nvim'
 
-# Nightly build - kickstart or other
-# alias nvim='NVIM_APPNAME=nvim $HOME/.local/nvim-linux64/bin/nvim'
-
-# Nightly build - LazyVim
-# alias nvim='NVIM_APPNAME=nvim-lazyvim $HOME/.local/nvim-linux64/bin/nvim'
-
 alias vi='nvim'
 alias vim='nvim'
 

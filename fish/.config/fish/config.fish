@@ -6,8 +6,7 @@ end
 # fish_config theme choose "ayu Dark"
 fish_config theme choose Nord
 
-# Bind Ctrl+Y to accept autosuggestions
-bind \cy accept-autosuggestion
+alias ...='cd ../..'
 
 alias ls='lsd'
 alias l='ls -l'
@@ -15,7 +14,14 @@ alias la='ls -a'
 alias ll='ls -la'
 alias lla='ls -la'
 alias lt='ls --tree'
+
+# Default nvim - kickstart or other
+# set -x NVIM_APPNAME nvim
+
+# Default nvim - LazyVim
 # set -x NVIM_APPNAME nvim-lazyvim
+
+alias nvim='/usr/bin/nvim'
 alias vi='nvim'
 alias vim='nvim'
 
