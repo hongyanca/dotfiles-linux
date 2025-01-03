@@ -8,7 +8,7 @@ Welcome to my dotfiles repository! 🎉 This is where I store and manage the con
 
 This repo contains configuration files for tools and applications I use daily, such as:
 
-- **Shells**: `zsh`, `bash`, `fish`
+- **Shells**: `zsh`, `fish`
 - **Editors**: `neovim`
 - **Terminal Tools**: `tmux`
 - **Version Control Tools**: `git`

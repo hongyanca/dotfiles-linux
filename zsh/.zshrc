@@ -5,6 +5,9 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+alias ..='cd ..'
+alias ...='cd ../..'
+
 alias ls='lsd'
 alias l='ls -l'
 alias la='ls -a'
@@ -12,7 +15,18 @@ alias ll='ls -la'
 alias lla='ls -la'
 alias lt='ls --tree'
 
-# alias nvim='NVIM_APPNAME=nvim-lazyvim nvim'
+# Default nvim - kickstart or other
+# alias nvim='NVIM_APPNAME=nvim /usr/bin/nvim'
+
+# Default nvim - LazyVim
+# alias nvim='NVIM_APPNAME=nvim-lazyvim /usr/bin/nvim'
+
+# Nightly build - kickstart or other
+# alias nvim='NVIM_APPNAME=nvim $HOME/.local/nvim-linux64/bin/nvim'
+
+# Nightly build - LazyVim
+# alias nvim='NVIM_APPNAME=nvim-lazyvim $HOME/.local/nvim-linux64/bin/nvim'
+
 alias vi='nvim'
 alias vim='nvim'
 
@@ -33,8 +47,14 @@ HISTFILE=$HOME/.zsh_history
 SAVEHIST=500000
 HISTSIZE=500000
 
+# Set up zoxide
 eval "$(zoxide init zsh)"
+alias j='z'
+
 source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# Set up yazi `y` shell wrapper that provides the ability to
+# change the current working directory when exiting Yazi.
 function y() {
   local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
   yazi "$@" --cwd-file="$tmp"
@@ -44,10 +64,13 @@ function y() {
   rm -f -- "$tmp"
 }
 
+# Install NPM into home directory with distribution nodejs package
 NPM_PACKAGES="$HOME/.npm-packages"
 # Run ` npm config set prefix "$HOME/.npm-packages" `
-export PATH="$PATH:$NPM_PACKAGES/bin"
+# before installing npm packages globally.
 # export MANPATH="${MANPATH-$(manpath)}:$NPM_PACKAGES/share/man"
+
+export PATH="$PATH:$NPM_PACKAGES/bin:$HOME/.local/bin:$HOME/scripts"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
