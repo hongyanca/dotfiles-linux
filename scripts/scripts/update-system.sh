@@ -44,7 +44,7 @@ elif [[ $LINUX_DISTRO == "arch" ]]; then
   sudo pacman -Syu
   sudo pacman -Sc
   echo
-  echo -e "After kernel update, re-generate initramfs: ${BLUE}"
+  echo -e "After kernel update, reboot and re-generate initramfs: ${BLUE}"
   echo -e "sudo mkinitcpio -P ${NC}"
 else
   echo "Unknown distro" >&2
@@ -52,5 +52,5 @@ else
 fi
 
 echo -e "${GREEN}"
-echo "System is up to date!${NC}"
+echo -e "System is up to date!${NC}"
 echo
