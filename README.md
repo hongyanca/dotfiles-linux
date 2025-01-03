@@ -43,7 +43,7 @@ GNU Stow is a powerful symlink manager that simplifies the process of linking do
    git clone --depth=1 --single-branch --branch main https://github.com/hongyanca/dotfiles-linux.git ~/.dotfiles
    ```
 
-   For the **host with designated branch**, replace BRANCH_FOR_THE_HOST for the host. It is recommended to set `BRANCH_FOR_THE_HOST` to match the hostname of the system.
+   For the **host with designated branch**, replace `BRANCH_FOR_THE_HOST` for the host. It is recommended to set `BRANCH_FOR_THE_HOST` to match the hostname of the system.
 
    ```bash
    rm -rf ~/.dotfiles

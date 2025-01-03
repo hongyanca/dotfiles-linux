@@ -2,7 +2,7 @@
 
 # Define color codes
 # RED='\033[0;31m'
-# GREEN='\033[0;32m'
+GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
@@ -43,13 +43,14 @@ elif [[ $LINUX_DISTRO == "arch" ]]; then
   sudo pacman -S --needed archlinux-keyring
   sudo pacman -Syu
   sudo pacman -Sc
+  echo
   echo -e "After kernel update, re-generate initramfs: ${BLUE}"
-  echo -e "sudo mkinitcpio -P"
-  echo -e "${NC}"
+  echo -e "sudo mkinitcpio -P ${NC}"
 else
   echo "Unknown distro" >&2
   exit 1
 fi
 
+echo -e "${GREEN}"
+echo "System is up to date!${NC}"
 echo
-echo "System is up to date!"
