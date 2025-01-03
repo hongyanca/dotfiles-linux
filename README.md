@@ -1,6 +1,6 @@
 ## My Linux Dotfiles Repo 🌟
 
-Welcome to my dotfiles repository! 🎉 This is where I store and manage the configuration files that power my development environment and system setup. By leveraging [**GNU Stow**](https://www.gnu.org/software/stow/), I ensure all my dotfiles are cleanly symlinked, making it easy to organize, version control, and deploy them across multiple machines.
+Welcome to my Linux dotfiles repository! 🎉 This is where I store and manage the configuration files that power my development environment and system setup. By leveraging [**GNU Stow**](https://www.gnu.org/software/stow/), all my dotfiles are cleanly symlinked, making it easy to organize, version control, and deploy them across multiple machines.
 
 
 
