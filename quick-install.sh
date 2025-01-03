@@ -65,17 +65,7 @@ function remove_conflicting_scripts() {
 
   # Loop through the file names and remove corresponding files in ~/scripts
   for script_file in "${script_files[@]}"; do
-    local target_file="$target_dir/$script_file"
-    if [ -f "$target_file" ]; then
-      rm -f "$target_file"
-      if [ $? -ne 0 ]; then
-        echo "Error: Failed to remove file: $target_file" >&2
-      else
-        echo "Script with duplicated name removed: $target_file"
-      fi
-    else
-      :
-     fi
+    rm -f "$target_dir/$script_file"
   done
   return 0
 }
@@ -83,11 +73,15 @@ remove_conflicting_scripts
 stow scripts
 
 echo
-echo "🌟 Enjoy the new environment! 🌟"
+echo "# Replace Git's 'user.name' and 'user.email' with your own."
+echo "git config --global user.name "
+echo "git config --global user.email "
 echo
 echo "# Change default shell to fish"
 echo "sudo chsh -s $(which fish) $USER"
 echo
 echo "# Change default shell to zsh"
 echo "sudo chsh -s $(which zsh) $USER"
+echo
+echo "🌟 Enjoy the new environment! 🌟"
 echo
