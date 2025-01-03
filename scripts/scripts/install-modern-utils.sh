@@ -56,7 +56,9 @@ install_required_package() {
     echo "Detected Arch-based distribution. Using pacman to install $package."
     sudo pacman -S --needed archlinux-keyring
     sudo pacman -Syu
-    sudo pacman -S --needed --noconfirm "$package"
+    sudo pacman -S --needed --noconfirm "$package" util-linux zsh-syntax-highlighting
+    sudo rm -f /usr/share/zsh-syntax-highlighting
+    sudo ln -s /usr/share/zsh/plugins/zsh-syntax-highlighting /usr/share/zsh-syntax-highlighting
     # Arch Linux is a rolling distro, so it already provides the latest packages
     sudo pacman -S --needed --noconfirm btop fzf fd bat git-delta lazygit lsd ripgrep gdu zoxide fastfetch yazi
     # Don't need to install binary releases for GitHub
