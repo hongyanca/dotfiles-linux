@@ -17,9 +17,11 @@ get_distro() {
     ID_LIKE=$(grep ^ID= /etc/os-release | cut -d= -f2 | tr -d '"')
   fi
 
-  # Check if ID_LIKE contains "rhel" or "debian"
+  # Check if ID_LIKE contains "rhel" "fedora" "debian" or "arch"
   if [[ $ID_LIKE == *"rhel"* ]]; then
     LINUX_DISTRO="rhel"
+  elif [[ $ID_LIKE == *"fedora"* ]]; then
+    LINUX_DISTRO="fedora"
   elif [[ $ID_LIKE == *"debian"* ]]; then
     LINUX_DISTRO="debian"
   elif [[ $ID_LIKE == *"arch"* ]]; then
@@ -32,6 +34,10 @@ get_distro
 
 # Update installed packages based on the LINUX_DISTRO value
 if [[ $LINUX_DISTRO == "rhel" ]]; then
+  sudo dnf upgrade --refresh -y
+  sudo dnf autoremove
+  sudo dnf clean all
+elif [[ $LINUX_DISTRO == "fedora" ]]; then
   sudo dnf upgrade --refresh -y
   sudo dnf autoremove
   sudo dnf clean all

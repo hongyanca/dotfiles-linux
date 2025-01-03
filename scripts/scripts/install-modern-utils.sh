@@ -27,9 +27,11 @@ get_distro() {
     ID_LIKE=$(grep ^ID= /etc/os-release | cut -d= -f2 | tr -d '"')
   fi
 
-  # Check if ID_LIKE contains "rhel" or "debian"
+  # Check if ID_LIKE contains "rhel" "fedora" "debian" or "arch"
   if [[ $ID_LIKE == *"rhel"* ]]; then
     LINUX_DISTRO="rhel"
+  elif [[ $ID_LIKE == *"fedora"* ]]; then
+    LINUX_DISTRO="fedora"
   elif [[ $ID_LIKE == *"debian"* ]]; then
     LINUX_DISTRO="debian"
   elif [[ $ID_LIKE == *"arch"* ]]; then
@@ -82,6 +84,13 @@ if [[ $LINUX_DISTRO == "rhel" ]]; then
   # Use `sudo dnf module reset nodejs:20/common` to reset the default version
   sudo dnf module install nodejs:22/common
   install_npm_packages
+elif [[ $LINUX_DISTRO == "fedora" ]]; then
+  echo "Detected Fedora-based distribution. Using dnf to install $package."
+  sudo dnf upgrade --refresh -y
+  sudo dnf install -y yum-utils gcc make python3-pip p7zip nodejs util-linux-user zsh-syntax-highlighting
+  python3 -m pip install --upgrade pip
+  python3 -m pip install --user --upgrade pynvim
+  install_npm_packages
 elif [[ $LINUX_DISTRO == "debian" ]]; then
   echo "Detected Debian-based distribution. Using apt-get to install $package."
   sudo apt-get update
@@ -132,8 +141,10 @@ install_required_package() {
     return 0
   fi
 
-  # Check if LINUX_DISTRO contains 'rhel' or 'debian' and install the package
+  # Check if LINUX_DISTRO contains 'rhel' "fedora" 'debian' or 'arch' and install the package
   if [[ $LINUX_DISTRO == "rhel" ]]; then
+    sudo dnf install -y "$package"
+  elif [[ $LINUX_DISTRO == "fedora" ]]; then
     sudo dnf install -y "$package"
   elif [[ $LINUX_DISTRO == "debian" ]]; then
     sudo apt-get install -y "$package"
@@ -190,7 +201,12 @@ install_latest_release_from_gh() {
   asset_url=$(echo "$latest_release" | jq -r --arg suffix "$asset_suffix" '.assets[] | select(.name | endswith($suffix)) | .browser_download_url')
 
   echo "Downloading $util_name from $asset_url"
-  wget -q --show-progress -O "$asset_filename" "$asset_url"
+  if [[ $LINUX_DISTRO == "fedora" ]]; then
+    # Fedora Linux 40+ has wget v2.2.0+, which does not support --show-progress
+    wget -q -O "$asset_filename" "$asset_url"
+  else
+    wget -q --show-progress -O "$asset_filename" "$asset_url"
+  fi
 
   decomp_dir="tmp-$util_name-install"
   echo "Extracting $asset_filename to $decomp_dir"
