@@ -17,5 +17,17 @@ then
 else
   # Run nvim in headless mode and quit if nvim is found
   NVIM_APPNAME=nvim nvim --headless -c 'quitall'
-  printf "\n\e[34mDon't panic if there are installtion errors.\e[0m\n\n"
+  printf "\n\n\e[34mDon't panic if there are installtion errors.\e[0m\n\n"
 fi
+
+print_post_install_info() {
+  echo "For fish, add the following line to ~/.config/fish/config.fish"
+  echo "set -x NVIM_APPNAME nvim"
+  echo
+  echo "For bash or zsh, add the following line to ~/.bashrc or ~/.zshrc"
+  echo "alias nvim='NVIM_APPNAME=nvim nvim'"
+  echo
+  echo "More examples of creating NVIM_APPNAME alias in shell rc files:"
+  printf "\e[34mhttps://github.com/hongyanca/dotfiles-linux\e[0m\n\n"
+}
+print_post_install_info

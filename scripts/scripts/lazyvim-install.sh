@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-printf "Downloading kickstart.nvim to \e[34m~/.config/nvim-lazyvim\e[0m\n"
+printf "Downloading LazyVim config to \e[34m~/.config/nvim-lazyvim\e[0m\n"
 
 rm -rf ~/.local/share/nvim-lazyvim
 rm -rf ~/.local/state/nvim-lazyvim
@@ -17,7 +17,7 @@ then
 else
   # Run nvim in headless mode and quit if nvim is found
   NVIM_APPNAME=nvim-lazyvim nvim --headless -c 'quitall'
-  printf "\n\e[34mDon't panic if there are installtion errors.\e[0m\n\n"
+  printf "\n\n\e[34mDon't panic if there are installtion errors.\e[0m\n\n"
 fi
 
 print_post_install_info() {
