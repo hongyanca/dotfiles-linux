@@ -49,7 +49,6 @@ DISTRO_PACKAGES["debian"]=""
 # Function to install packages based on distribution
 install_packages() {
   local packages_list_str=("${DISTRO_PACKAGES[$LINUX_DISTRO]}")
-  # Convert the string to an array
   # Ignore the lsp warnings, this is the corret way to convert a string to an array
   read -ra packages <<<"$packages_list_str"
 
@@ -265,10 +264,15 @@ case "$LINUX_DISTRO" in
 esac
 
 print_post_install_info() {
-  echo ""
+  echo
+  echo "If you see error like:"
+  echo -e "${RED}jq: error (at <stdin>:1): Cannot iterate over null (null)${NC}"
+  echo "You have reached the GitHub API rate limit."
+  echo "Please wait for a while and try again."
+  echo
   echo "Examples of shell rc files to integrate these modern utilities:"
   echo -e "${BLUE}https://github.com/hongyanca/dotfiles-linux${NC}"
-  echo ""
+  echo
 }
 
 print_post_install_info

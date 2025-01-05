@@ -62,6 +62,12 @@ install_version() {
 
   if [ -z "$version" ] || [ -z "$download_url" ]; then
     echo "Could not determine download URL or version for $version_type"
+    echo
+    echo "If you see error like:"
+    echo "jq: error (at <stdin>:1): Cannot iterate over null (null)"
+    echo "You have reached the GitHub API rate limit."
+    echo "Please wait for a while and try again."
+    echo
     return 1
   fi
 
