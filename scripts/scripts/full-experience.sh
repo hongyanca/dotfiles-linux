@@ -66,6 +66,9 @@ install_required_dependencies() {
     sudo apt-get install -y wget curl zsh fish stow tar jq unzip bzip2 make git xclip \
       gcc make libbz2-dev python3-pip p7zip passwd zsh-syntax-highlighting \
       bat btop gdu
+    # bat will be installed as batcat
+    sudo rm -f /usr/local/bin/bat
+    sudo ln -s /usr/bin/batcat /usr/local/bin/bat
     python3 -m pip install --upgrade pip --break-system-packages
     python3 -m pip install --user --upgrade pynvim --break-system-packages
     # Install Node.js 22.x
