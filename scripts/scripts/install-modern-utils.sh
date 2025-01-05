@@ -41,10 +41,10 @@ get_distro
 
 # KV Map of Linux Distributions and their packages
 declare -A DISTRO_PACKAGES
-DISTRO_PACKAGES["rhel"]="git-delta fzf ripgrep zoxide"
-DISTRO_PACKAGES["fedora"]="git-delta fzf ripgrep zoxide lsd"
-DISTRO_PACKAGES["arch"]="git-delta fzf ripgrep zoxide lsd fd lazygit fastfetch yazi"
-DISTRO_PACKAGES["debian"]=""
+DISTRO_PACKAGES["rhel"]="bat btop gdu git-delta fzf ripgrep zoxide"
+DISTRO_PACKAGES["fedora"]="bat btop gdu git-delta fzf ripgrep zoxide lsd"
+DISTRO_PACKAGES["arch"]="bat btop gdu git-delta fzf ripgrep zoxide lsd fd lazygit fastfetch yazi"
+DISTRO_PACKAGES["debian"]="bat btop gdu"
 
 # Function to install packages based on distribution
 install_packages() {
@@ -55,7 +55,7 @@ install_packages() {
   case "$LINUX_DISTRO" in
   "rhel" | "fedora")
     sudo dnf upgrade --refresh -y
-    sudo yum install -y "${packages[@]}"
+    sudo dnf install -y "${packages[@]}"
     ;;
   "arch")
     sudo pacman -S --needed --noconfirm archlinux-keyring
