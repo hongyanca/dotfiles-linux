@@ -119,7 +119,6 @@ install_npm_packages
 # Install modern utilities
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/hongyanca/dotfiles-linux/refs/heads/main/scripts/scripts/install-modern-utils.sh)"
 
-# Install neovim, kickstart.nvim, and LazyVim
+# Install neovim, kickstart.nvim
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/hongyanca/dotfiles-linux/refs/heads/main/scripts/scripts/install-neovim.sh)"
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/hongyanca/dotfiles-linux/refs/heads/main/scripts/scripts/kickstart-nvim-install.sh)"
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/hongyanca/dotfiles-linux/refs/heads/main/scripts/scripts/lazyvim-install.sh)"
