@@ -96,12 +96,12 @@ install_npm_packages() {
   export PATH="$PATH:$NPM_PACKAGES/bin"
   USER_GRP="$(id -un):$(id -gn)"
   sudo mkdir -p /usr/local/n
-  sudo chown -R $USER_GRP /usr/local/n
-  sudo chown -R $USER_GRP /usr/local/lib
-  sudo chown -R $USER_GRP /usr/local/bin
-  sudo chown -R $USER_GRP /usr/local/include
-  sudo chown -R $USER_GRP /usr/local/share
-  sudo chown -R $USER_GRP /usr/local/share/man/
+  sudo chown -R "$USER_GRP" "/usr/local/n"
+  sudo chown -R "$USER_GRP" "/usr/local/lib"
+  sudo chown -R "$USER_GRP" "/usr/local/bin"
+  sudo chown -R "$USER_GRP" "/usr/local/include"
+  sudo chown -R "$USER_GRP" "/usr/local/share"
+  sudo chown -R "$USER_GRP" "/usr/local/share/man/"
   echo "Installing Node.js global packages..."
   npm cache clean --force
   rm -rf "$HOME/.npm-packages/lib/node_modules/tree-sitter-cli"
@@ -114,4 +114,9 @@ install_npm_packages() {
 install_npm_packages
 
 # Install modern utilities
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/hongyanca/dotfiles-linux/refs/heads/main/scripts/scripts/install-modern-utils.sh)"
+
 # Install neovim, kickstart.nvim, and LazyVim
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/hongyanca/dotfiles-linux/refs/heads/main/scripts/scripts/install-neovim.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/hongyanca/dotfiles-linux/refs/heads/main/scripts/scripts/kickstart-nvim-install.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/hongyanca/dotfiles-linux/refs/heads/main/scripts/scripts/lazyvim-install.sh)"

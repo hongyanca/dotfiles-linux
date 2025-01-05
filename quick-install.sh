@@ -5,36 +5,36 @@ echo "Clone the Repository..."
 rm -rf ~/.dotfiles
 git clone --depth=1 --single-branch --branch main https://github.com/hongyanca/dotfiles-linux.git ~/.dotfiles
 
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/hongyanca/dotfiles-linux/refs/heads/main/scripts/scripts/install-modern-utils.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/hongyanca/dotfiles-linux/refs/heads/main/scripts/scripts/full-experience.sh)"
 
 echo "Setting up symbolic links..."
 
 rm -f ~/.gitignore_global
 rm -f ~/.gitconfig
-cd ~/.dotfiles
+cd ~/.dotfiles || exit
 stow git
 
 rm -f ~/.tmux.conf
-cd ~/.dotfiles
+cd ~/.dotfiles || exit
 stow tmux
 
 rm -rf ~/.p10k ~/.p10k.zsh ~/.zshrc
 git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.p10k
-cd ~/.dotfiles
+cd ~/.dotfiles || exit
 stow zsh
 
 mkdir -p ~/.config
 rm -rf ~/.config/fish
-cd ~/.dotfiles
+cd ~/.dotfiles || exit
 stow fish
 
 mkdir -p ~/.config
 rm -rf ~/.config/yazi
-cd ~/.dotfiles
+cd ~/.dotfiles || exit
 stow yazi
 
 mkdir -p ~/scripts
-cd ~/.dotfiles
+cd ~/.dotfiles || exit
 function remove_conflicting_scripts() {
   local scripts_dir="$HOME/.dotfiles/scripts/scripts"
   local target_dir="$HOME/scripts"
