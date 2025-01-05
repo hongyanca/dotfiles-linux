@@ -9,159 +9,77 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-print_post_install_info() {
-  echo ""
-  echo "Examples of shell rc files to integrate these modern utilities:"
-  echo -e "${BLUE}https://github.com/hongyanca/dotfiles-linux${NC}"
-  echo ""
-}
-
 LINUX_DISTRO="unknown"
-# Function to set the LINUX_DISTRO variable based on the ID_LIKE or ID value
 get_distro() {
-  # Attempt to read the ID_LIKE value from /etc/os-release
-  ID_LIKE=$(grep ^ID_LIKE= /etc/os-release | cut -d= -f2 | tr -d '"')
+  # Declare an associative array for distro mappings
+  declare -A distro_map
+  distro_map["rhel"]="rhel"
+  distro_map["almalinux"]="rhel"
+  distro_map["fedora"]="fedora"
+  distro_map["debian"]="debian"
+  distro_map["ubuntu"]="debian"
+  distro_map["arch"]="arch"
 
-  # If ID_LIKE is empty, fall back to reading the ID value
-  if [[ -z $ID_LIKE ]]; then
-    ID_LIKE=$(grep ^ID= /etc/os-release | cut -d= -f2 | tr -d '"')
-  fi
+  # Read ID value
+  ID=$(grep ^ID= /etc/os-release | cut -d= -f2 | tr -d '"')
 
-  # Check if ID_LIKE contains "rhel" "fedora" "debian" or "arch"
-  if [[ $ID_LIKE == *"rhel"* ]]; then
-    LINUX_DISTRO="rhel"
-  elif [[ $ID_LIKE == *"fedora"* ]]; then
-    LINUX_DISTRO="fedora"
-  elif [[ $ID_LIKE == *"debian"* ]]; then
-    LINUX_DISTRO="debian"
-  elif [[ $ID_LIKE == *"arch"* ]]; then
-    LINUX_DISTRO="arch"
+  # Read the first word of ID_LIKE directly
+  ID_LIKE=$(grep ^ID_LIKE= /etc/os-release | cut -d= -f2 | tr -d '"' | awk '{print $1}')
+
+  # Check if the ID exists in our map
+  if [[ -n "$ID" ]] && [[ -v distro_map["$ID"] ]]; then
+    LINUX_DISTRO="${distro_map[$ID]}"
   else
-    LINUX_DISTRO="unknown"
+    # If ID is not in the map, check ID_LIKE
+    if [[ -n "$ID_LIKE" ]] && [[ -v distro_map["$ID_LIKE"] ]]; then
+      LINUX_DISTRO="${distro_map[$ID_LIKE]}"
+    fi
+    # If no match found, keep unknown
   fi
 }
 get_distro
 
+# KV Map of Linux Distributions and their packages
+declare -A DISTRO_PACKAGES
+DISTRO_PACKAGES["rhel"]=("git-delta" "fzf" "ripgrep" "zoxide")
+DISTRO_PACKAGES["fedora"]=("git-delta" "fzf" "ripgrep" "zoxide" "lsd")
+DISTRO_PACKAGES["arch"]=("git-delta" "fzf" "ripgrep" "zoxide" "lsd" "fd" "lazygit" "fastfetch" "yazi")
+DISTRO_PACKAGES["debian"]=() 
 
-install_npm_packages() {
-# Install npm packages globally without sudo
-mkdir -p "$HOME/.npm-packages"
-npm config set prefix "$HOME/.npm-packages"
-export NPM_PACKAGES="$HOME/.npm-packages"
-export PATH="$PATH:$NPM_PACKAGES/bin"
-USER_GRP="$(id -un):$(id -gn)"
-sudo mkdir -p /usr/local/n
-sudo chown -R $USER_GRP /usr/local/n
-sudo chown -R $USER_GRP /usr/local/lib
-sudo chown -R $USER_GRP /usr/local/bin
-sudo chown -R $USER_GRP /usr/local/include
-sudo chown -R $USER_GRP /usr/local/share
-sudo chown -R $USER_GRP /usr/local/share/man/
-echo "Installing Node.js global packages..."
-npm cache clean --force
-rm -rf "$HOME/.npm-packages/lib/node_modules/tree-sitter-cli"
-rm -rf "$HOME/.npm-packages/lib/node_modules/neovim"
-rm -rf "$HOME/.npm-packages/lib/node_modules/pyright"
-rm -rf "$HOME/.npm-packages/lib/node_modules/n"
-rm -rf "$HOME/.npm-packages/lib/node_modules/npm-check"
-npm install tree-sitter-cli neovim pyright n npm-check -g
+# Function to install packages based on distribution
+install_packages() {
+  local packages=("${DISTRO_PACKAGES[$LINUX_DISTRO]}")
+
+  case "$LINUX_DISTRO" in
+    "rhel"|"fedora")
+      sudo dnf upgrade --refresh -y
+      sudo yum install -y "${packages[@]}"
+      ;;
+    "arch")
+      sudo pacman -S --needed --noconfirm archlinux-keyring
+      sudo pacman -Syu
+      sudo pacman -S --needed --noconfirm "${packages[@]}"
+      ;;
+    "debian")
+      sudo apt-get update -y
+      sudo apt-get install -y "${packages[@]}"
+      ;;
+    *)
+      echo "Error: Unsupported Linux distribution."
+      return 1
+      ;;
+  esac
+
+  return 0
 }
 
-
-REQUIRED_PKGS=("wget" "curl" "zsh" "fish" "stow" "tar" "jq" "unzip" "bzip2" "make" "git" "xclip")
-REQ_PKGS_STR="${REQUIRED_PKGS[*]}"
-
-
-# Install packages based on the LINUX_DISTRO value
-if [[ $LINUX_DISTRO == "rhel" ]]; then
-  echo "Detected RHEL-based distribution. Using dnf to install $package."
-  sudo dnf upgrade --refresh -y
-  sudo dnf install -y yum-utils gcc make python3-pip p7zip util-linux-user zsh-syntax-highlighting
-  python3 -m pip install --upgrade pip
-  python3 -m pip install --user --upgrade pynvim
-  # Install Node.js 22.x
-  # Use `sudo dnf module list nodejs` to list available Node.js versions
-  # Use `sudo dnf module reset nodejs:20/common` to reset the default version
-  sudo dnf module install nodejs:22/common
-  install_npm_packages
-elif [[ $LINUX_DISTRO == "fedora" ]]; then
-  echo "Detected Fedora-based distribution. Using dnf to install $package."
-  sudo dnf upgrade --refresh -y
-  sudo dnf install -y yum-utils gcc make python3-pip p7zip nodejs util-linux-user zsh-syntax-highlighting
-  python3 -m pip install --upgrade pip
-  python3 -m pip install --user --upgrade pynvim
-  install_npm_packages
-elif [[ $LINUX_DISTRO == "debian" ]]; then
-  echo "Detected Debian-based distribution. Using apt-get to install $package."
-  sudo apt-get update
-  sudo apt-get install -y gcc make libbz2-dev python3-pip p7zip passwd zsh-syntax-highlighting
-  python3 -m pip install --upgrade pip --break-system-packages
-  python3 -m pip install --user --upgrade pynvim --break-system-packages
-  # Install Node.js 22.x
-  curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt-get install -y nodejs
-  install_npm_packages
-elif [[ $LINUX_DISTRO == "arch" ]]; then
-  echo "Detected Arch-based distribution. Using pacman to install $package."
-  sudo pacman -S --needed --noconfirm archlinux-keyring
-  sudo pacman -Syu
-  sudo pacman -S --needed --noconfirm gcc make python python-pip lua nodejs npm p7zip util-linux zsh-syntax-highlighting
-  sudo rm -f /usr/share/zsh-syntax-highlighting
-  sudo ln -s /usr/share/zsh/plugins/zsh-syntax-highlighting /usr/share/zsh-syntax-highlighting
-  python3 -m pip install --upgrade pip --break-system-packages
-  python3 -m pip install --user --upgrade pynvim --break-system-packages
-  install_npm_packages
-  sudo pacman -S --needed --noconfirm $REQ_PKGS_STR
-  # Arch Linux is a rolling distro, so it already provides the latest packages
-  # Don't need to install binary releases for GitHub
-  sudo pacman -S --needed --noconfirm btop fzf fd bat git-delta lazygit lsd ripgrep gdu zoxide fastfetch yazi
-  print_post_install_info
-  exit 0
+# Call the install function if distro is defined
+if [[ -n "$LINUX_DISTRO" ]]; then
+  install_packages "$LINUX_DISTRO"
 else
-  echo "Unknown distro" >&2
+  echo "Error: Unsupported Linux distribution."
   exit 1
 fi
-
-
-# Function to install a required package based on the distribution
-install_required_package() {
-  package=$1
-
-  # Function to check if a package is installed
-  is_installed() {
-    if command -v "$package" &>/dev/null; then
-      return 0
-    else
-      return 1
-    fi
-  }
-
-  # Check if the package is already installed
-  if is_installed; then
-    echo -e "${GREEN}✔ ${BLUE}$package${NC}"
-    return 0
-  fi
-
-  # Check if LINUX_DISTRO contains 'rhel' "fedora" 'debian' or 'arch' and install the package
-  if [[ $LINUX_DISTRO == "rhel" ]]; then
-    sudo dnf install -y "$package"
-  elif [[ $LINUX_DISTRO == "fedora" ]]; then
-    sudo dnf install -y "$package"
-  elif [[ $LINUX_DISTRO == "debian" ]]; then
-    sudo apt-get install -y "$package"
-  elif [[ $LINUX_DISTRO == "arch" ]]; then
-    :
-  else
-    echo "Unsupported distribution."
-    return 1
-  fi
-}
-
-
-echo "Installing required packages..."
-# Install each package in the packages array
-for package in "${REQUIRED_PKGS[@]}"; do
-  install_required_package "$package"
-done
 
 
 # Function to install the latest release of a GitHub repository
@@ -189,6 +107,8 @@ install_latest_release_from_gh() {
   # Compare versions
   if [ "$installed_ver" == "$latest_ver" ]; then
     echo -e "${GREEN}✔ ${BLUE}$repo is already up to date.${NC}"
+    # api.github.com has a rate limit
+    sleep 3
     return 1
   else
     echo
@@ -263,45 +183,97 @@ install_latest_release_from_gh() {
 }
 
 
-install_latest_release_from_gh "aristocratos/btop" \
-  "btop --version | head -1 | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
-  "x86_64-linux-musl.tbz"
-install_latest_release_from_gh "junegunn/fzf" \
-  "fzf --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
-  "linux_amd64.tar.gz"
-install_latest_release_from_gh "sharkdp/fd" \
-  "fd --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
-  "x86_64-unknown-linux-gnu.tar.gz"
-install_latest_release_from_gh "sharkdp/bat" \
-  "bat --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
-  "x86_64-unknown-linux-gnu.tar.gz"
-install_latest_release_from_gh "jesseduffield/lazygit" \
-  "lazygit --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -1" \
-  "Linux_x86_64.tar.gz"
-install_latest_release_from_gh "dandavison/delta" \
-  "delta --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
-  "x86_64-unknown-linux-gnu.tar.gz"
-install_latest_release_from_gh "lsd-rs/lsd" \
-  "lsd --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
-  "x86_64-unknown-linux-gnu.tar.gz"
-install_latest_release_from_gh "BurntSushi/ripgrep" \
-  "rg --version | head -1 | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
-  "x86_64-unknown-linux-musl.tar.gz" "rg"
-install_latest_release_from_gh "dundee/gdu" \
-  "gdu --version | head -1 | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
-  "linux_amd64_static.tgz" "gdu_linux_amd64_static" "gdu"
-install_latest_release_from_gh "ajeetdsouza/zoxide" \
-  "zoxide --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
-  "x86_64-unknown-linux-musl.tar.gz"
-install_latest_release_from_gh "fastfetch-cli/fastfetch" \
-  "fastfetch --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
-  "linux-amd64.tar.gz"
-install_latest_release_from_gh "sxyazi/yazi" \
-  "yazi --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
-  "x86_64-unknown-linux-musl.zip"
-# Install yazi cli tool ya for plugin/flavor management
-install_latest_release_from_gh "sxyazi/yazi" \
-  "ya --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
-  "x86_64-unknown-linux-musl.zip" "ya"
+function install_git-delta() {
+  install_latest_release_from_gh "dandavison/delta" \
+    "delta --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
+    "x86_64-unknown-linux-gnu.tar.gz"
+}
+function install_fzf() {
+  install_latest_release_from_gh "junegunn/fzf" \
+    "fzf --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
+    "linux_amd64.tar.gz"
+}
+function install_fd() {
+  install_latest_release_from_gh "sharkdp/fd" \
+    "fd --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
+    "x86_64-unknown-linux-gnu.tar.gz"
+}
+function install_lazygit() {
+  install_latest_release_from_gh "jesseduffield/lazygit" \
+    "lazygit --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -1" \
+    "Linux_x86_64.tar.gz"
+}
+function install_lsd() {
+  install_latest_release_from_gh "lsd-rs/lsd" \
+    "lsd --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
+    "x86_64-unknown-linux-gnu.tar.gz"
+}
+function install_ripgrep() {
+  install_latest_release_from_gh "BurntSushi/ripgrep" \
+    "rg --version | head -1 | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
+    "x86_64-unknown-linux-musl.tar.gz" "rg"
+}
+function install_zoxide() {
+  install_latest_release_from_gh "ajeetdsouza/zoxide" \
+    "zoxide --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
+    "x86_64-unknown-linux-musl.tar.gz"
+}
+function install_fastfetch() {
+  install_latest_release_from_gh "fastfetch-cli/fastfetch" \
+    "fastfetch --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
+    "linux-amd64.tar.gz"
+}
+function install_yazi() {
+  install_latest_release_from_gh "sxyazi/yazi" \
+    "yazi --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
+    "x86_64-unknown-linux-musl.zip"
+  # Install yazi cli tool ya for plugin/flavor management
+  install_latest_release_from_gh "sxyazi/yazi" \
+    "ya --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
+    "x86_64-unknown-linux-musl.zip" "ya"
+}
+
+
+case "$LINUX_DISTRO" in
+  "rhel")
+    install_lsd
+    install_fd
+    install_lazygit
+    install_fastfetch
+    install_yazi
+    ;;
+  "fedora")
+    install_fd
+    install_lazygit
+    install_fastfetch
+    install_yazi
+    ;;
+  "arch")
+    :
+    ;;
+  "debian")
+    install_git-delta
+    install_fzf
+    install_lsd
+    install_ripgrep
+    install_zoxide
+    install_fd
+    install_lazygit
+    install_fastfetch
+    install_yazi
+    ;;
+  *)
+    echo "Error: Unsupported Linux distribution."
+    return 1
+    ;;
+esac
+
+
+print_post_install_info() {
+  echo ""
+  echo "Examples of shell rc files to integrate these modern utilities:"
+  echo -e "${BLUE}https://github.com/hongyanca/dotfiles-linux${NC}"
+  echo ""
+}
 
 print_post_install_info
