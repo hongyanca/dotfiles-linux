@@ -41,33 +41,36 @@ get_distro
 
 # KV Map of Linux Distributions and their packages
 declare -A DISTRO_PACKAGES
-DISTRO_PACKAGES["rhel"]=("git-delta" "fzf" "ripgrep" "zoxide")
-DISTRO_PACKAGES["fedora"]=("git-delta" "fzf" "ripgrep" "zoxide" "lsd")
-DISTRO_PACKAGES["arch"]=("git-delta" "fzf" "ripgrep" "zoxide" "lsd" "fd" "lazygit" "fastfetch" "yazi")
-DISTRO_PACKAGES["debian"]=() 
+DISTRO_PACKAGES["rhel"]="git-delta fzf ripgrep zoxide"
+DISTRO_PACKAGES["fedora"]="git-delta fzf ripgrep zoxide lsd"
+DISTRO_PACKAGES["arch"]="git-delta fzf ripgrep zoxide lsd fd lazygit fastfetch yazi"
+DISTRO_PACKAGES["debian"]=""
 
 # Function to install packages based on distribution
 install_packages() {
-  local packages=("${DISTRO_PACKAGES[$LINUX_DISTRO]}")
+  local packages_list_str=("${DISTRO_PACKAGES[$LINUX_DISTRO]}")
+  # Convert the string to an array
+  # Ignore the lsp warnings, this is the corret way to convert a string to an array
+  read -ra packages <<<"$packages_list_str"
 
   case "$LINUX_DISTRO" in
-    "rhel"|"fedora")
-      sudo dnf upgrade --refresh -y
-      sudo yum install -y "${packages[@]}"
-      ;;
-    "arch")
-      sudo pacman -S --needed --noconfirm archlinux-keyring
-      sudo pacman -Syu
-      sudo pacman -S --needed --noconfirm "${packages[@]}"
-      ;;
-    "debian")
-      sudo apt-get update -y
-      sudo apt-get install -y "${packages[@]}"
-      ;;
-    *)
-      echo "Error: Unsupported Linux distribution."
-      return 1
-      ;;
+  "rhel" | "fedora")
+    sudo dnf upgrade --refresh -y
+    sudo yum install -y "${packages[@]}"
+    ;;
+  "arch")
+    sudo pacman -S --needed --noconfirm archlinux-keyring
+    sudo pacman -Syu
+    sudo pacman -S --needed --noconfirm "${packages[@]}"
+    ;;
+  "debian")
+    sudo apt-get update -y
+    sudo apt-get install -y "${packages[@]}"
+    ;;
+  *)
+    echo "Error: Unsupported Linux distribution."
+    return 1
+    ;;
   esac
 
   return 0
@@ -80,7 +83,6 @@ else
   echo "Error: Unsupported Linux distribution."
   exit 1
 fi
-
 
 # Function to install the latest release of a GitHub repository
 # Usage: install_latest_release "repo" "cmd_local_ver" "asset_suffix" ["alt_util_name"] ["symlink_name"]
@@ -121,12 +123,8 @@ install_latest_release_from_gh() {
   asset_url=$(echo "$latest_release" | jq -r --arg suffix "$asset_suffix" '.assets[] | select(.name | endswith($suffix)) | .browser_download_url')
 
   echo "Downloading $util_name from $asset_url"
-  if [[ $LINUX_DISTRO == "fedora" ]]; then
-    # Fedora Linux 40+ has wget v2.2.0+, which does not support --show-progress
-    wget -q -O "$asset_filename" "$asset_url"
-  else
-    wget -q --show-progress -O "$asset_filename" "$asset_url"
-  fi
+  cd /tmp || exit 1
+  wget -q -O "$asset_filename" "$asset_url"
 
   decomp_dir="tmp-$util_name-install"
   echo "Extracting $asset_filename to $decomp_dir"
@@ -169,7 +167,7 @@ install_latest_release_from_gh() {
     echo -e "${RED}Failed to install $util_name.${NC}"
   fi
 
-  # Create a symbolic link if the fourth argument is provided
+  # Create a symbolic link if the fifth argument is provided
   if [ -n "$symlink_name" ]; then
     sudo ln -sf "/usr/local/bin/$util_bin_fn" "/usr/local/bin/$symlink_name"
     ls -lh "/usr/local/bin/$symlink_name"
@@ -177,11 +175,10 @@ install_latest_release_from_gh() {
   ls -lh "/usr/local/bin/$util_bin_fn"
   "/usr/local/bin/$util_bin_fn" --version
 
-  printf "Cleaning up...\n\n"
+  printf "Cleaning up...\n"
   rm -rf "$asset_filename" "$decomp_dir"
   return 0
 }
-
 
 function install_git-delta() {
   install_latest_release_from_gh "dandavison/delta" \
@@ -233,41 +230,39 @@ function install_yazi() {
     "x86_64-unknown-linux-musl.zip" "ya"
 }
 
-
 case "$LINUX_DISTRO" in
-  "rhel")
-    install_lsd
-    install_fd
-    install_lazygit
-    install_fastfetch
-    install_yazi
-    ;;
-  "fedora")
-    install_fd
-    install_lazygit
-    install_fastfetch
-    install_yazi
-    ;;
-  "arch")
-    :
-    ;;
-  "debian")
-    install_git-delta
-    install_fzf
-    install_lsd
-    install_ripgrep
-    install_zoxide
-    install_fd
-    install_lazygit
-    install_fastfetch
-    install_yazi
-    ;;
-  *)
-    echo "Error: Unsupported Linux distribution."
-    return 1
-    ;;
+"rhel")
+  install_lsd
+  install_fd
+  install_lazygit
+  install_fastfetch
+  install_yazi
+  ;;
+"fedora")
+  install_fd
+  install_lazygit
+  install_fastfetch
+  install_yazi
+  ;;
+"arch")
+  :
+  ;;
+"debian")
+  install_git-delta
+  install_fzf
+  install_lsd
+  install_ripgrep
+  install_zoxide
+  install_fd
+  install_lazygit
+  install_fastfetch
+  install_yazi
+  ;;
+*)
+  echo "Error: Unsupported Linux distribution."
+  return 1
+  ;;
 esac
-
 
 print_post_install_info() {
   echo ""

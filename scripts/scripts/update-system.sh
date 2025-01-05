@@ -35,12 +35,12 @@ get_distro
 # Update installed packages based on the LINUX_DISTRO value
 if [[ $LINUX_DISTRO == "rhel" ]]; then
   sudo dnf upgrade --refresh -y
-  sudo dnf autoremove
-  sudo dnf clean all
+  # sudo dnf autoremove
+  # sudo dnf clean all
 elif [[ $LINUX_DISTRO == "fedora" ]]; then
   sudo dnf upgrade --refresh -y
-  sudo dnf autoremove
-  sudo dnf clean all
+  # sudo dnf autoremove
+  # sudo dnf clean all
 elif [[ $LINUX_DISTRO == "debian" ]]; then
   sudo apt-get update
   sudo NEEDRESTART_MODE=a apt-get -o APT::Get::Always-Include-Phased-Updates=true upgrade -y
@@ -48,7 +48,7 @@ elif [[ $LINUX_DISTRO == "debian" ]]; then
 elif [[ $LINUX_DISTRO == "arch" ]]; then
   sudo pacman -S --needed archlinux-keyring
   sudo pacman -Syu
-  sudo pacman -Sc
+  # sudo pacman -Sc
   echo
   echo -e "After kernel update, reboot and re-generate initramfs: ${BLUE}"
   echo -e "sudo mkinitcpio -P ${NC}"
