@@ -15,11 +15,11 @@ alias ll='ls -la'
 alias lla='ls -la'
 alias lt='ls --tree'
 
-# export _nvim_binary="/usr/bin/nvim"
+export _nvim_binary="/usr/bin/nvim"
 # alias nvim="NVIM_APPNAME=nvim $_nvim_binary"          # kickstart or other
-# alias nvim="NVIM_APPNAME=nvim-lazyvim $_nvim_binary"  # LazyVim
-alias vi='nvim'
-alias vim='nvim'
+alias nvim="NVIM_APPNAME=nvim-lazyvim $_nvim_binary"  # LazyVim
+alias vi="nvim"
+alias vim="nvim"
 
 # Set up fzf key bindings and fuzzy completion
 source <(fzf --zsh)
