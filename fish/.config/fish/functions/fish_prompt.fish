@@ -29,7 +29,7 @@ function fish_prompt
     end
     # Other icon options
     #set prompt_icon 󰦝
-    #set prompt_icon 
+    set prompt_icon 
     #set prompt_icon 
 
     # fish version 3.7 and higher supports 'prompt_pwd -d'
