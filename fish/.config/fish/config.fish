@@ -16,10 +16,9 @@ alias lla='ls -la'
 alias lt='ls --tree'
 
 alias k='kubectl'
-
-# set -x _nvim_binary "/usr/bin/nvim"
-# alias nvim="$_nvim_binary"
-# set -x NVIM_APPNAME nvim          # kickstart or other
+set -x _nvim_binary /usr/bin/nvim
+alias nvim="$_nvim_binary"
+set -x NVIM_APPNAME nvim # kickstart or other
 # set -x NVIM_APPNAME nvim-lazyvim  # LazyVim
 alias vi="nvim"
 alias vim="nvim"
