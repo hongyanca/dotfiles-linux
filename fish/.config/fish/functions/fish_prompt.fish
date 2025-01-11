@@ -29,7 +29,7 @@ function fish_prompt
     end
     # Other icon options
     #set prompt_icon 󰦝
-    #set prompt_icon 
+    set prompt_icon 
     #set prompt_icon 
 
     # fish version 3.7 and higher supports 'prompt_pwd -d'
@@ -38,13 +38,15 @@ function fish_prompt
 
     if test $fish_major_minor[1] -ge 3
         if test $fish_major_minor[2] -ge 7
-            string join '' -- (set_color cyan) $prompt_icon ' ' (prompt_pwd -d 12) (fish_git_prompt) (set_color normal) $stat (set_color cyan) '  '
+            string join '' -- (set_color cyan) $prompt_icon '  ' (prompt_pwd -d 15) (fish_git_prompt) (set_color normal) $stat (set_color cyan)
         else
-            string join '' -- (set_color cyan) $prompt_icon ' ' (prompt_pwd) (fish_git_prompt) (set_color normal) $stat (set_color cyan) '  '
+            string join '' -- (set_color cyan) $prompt_icon '  ' (prompt_pwd) (fish_git_prompt) (set_color normal) $stat (set_color cyan)
         end
     else
-        string join '' -- (set_color cyan) $prompt_icon ' ' (prompt_pwd) (fish_git_prompt) (set_color normal) $stat (set_color cyan) '  '
+        string join '' -- (set_color cyan) $prompt_icon '  ' (prompt_pwd) (fish_git_prompt) (set_color normal) $stat (set_color cyan)
     end
+
+    echo " "
 end
 
 
