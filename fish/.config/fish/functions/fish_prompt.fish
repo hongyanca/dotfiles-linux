@@ -28,7 +28,7 @@ function fish_prompt
         end
     end
     # Other icon options
-    #set prompt_icon 󰦝
+    set prompt_icon 󰦝
     #set prompt_icon 
     #set prompt_icon 
 
