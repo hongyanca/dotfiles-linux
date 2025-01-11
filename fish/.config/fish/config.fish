@@ -17,10 +17,10 @@ alias lt='ls --tree'
 
 alias k='kubectl'
 
-# set -x _nvim_binary "/usr/bin/nvim"
-# alias nvim="$_nvim_binary"
+set -x _nvim_binary /usr/bin/nvim
+alias nvim="$_nvim_binary"
 # set -x NVIM_APPNAME nvim          # kickstart or other
-# set -x NVIM_APPNAME nvim-lazyvim  # LazyVim
+set -x NVIM_APPNAME nvim-lazyvim # LazyVim
 alias vi="nvim"
 alias vim="nvim"
 # Alt+E edit the current command line in an external editor.
@@ -61,4 +61,4 @@ if test -f "$HOME/.llm-provider/export-api-keys.fish"
 end
 
 # Set $PATH
-set -x PATH $PATH $NPM_PACKAGES/bin $HOME/.local/bin $HOME/scripts
+set -x PATH $NPM_PACKAGES/bin $HOME/.local/bin $HOME/scripts $PATH
