@@ -49,7 +49,9 @@ alias j='z'
 set -x NPM_PACKAGES "$HOME/.npm-packages"
 
 # Cargo env
-# source "$HOME/.cargo/env.fish"
+if test -f "$HOME/.cargo/env.fish"
+    source "$HOME/.cargo/env.fish"
+end
 
 # Set $PATH
 set -x PATH $PATH $NPM_PACKAGES/bin $HOME/.local/bin $HOME/scripts
