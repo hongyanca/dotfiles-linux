@@ -71,4 +71,4 @@ if test -f "$HOME/.llm-provider/export-api-keys.fish"
 end
 
 # Set $PATH
-set -x PATH $PATH $NPM_PACKAGES/bin $HOME/.local/bin $HOME/scripts
+set -x PATH $NPM_PACKAGES/bin $HOME/.local/bin $HOME/scripts $PATH
