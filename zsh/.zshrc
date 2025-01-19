@@ -61,7 +61,7 @@ NPM_PACKAGES="$HOME/.npm-packages"
 # before installing npm packages globally.
 # export MANPATH="${MANPATH-$(manpath)}:$NPM_PACKAGES/share/man"
 
-export PATH="$PATH:$NPM_PACKAGES/bin:$HOME/.local/bin:$HOME/scripts"
+export PATH="$NPM_PACKAGES/bin:$HOME/.local/bin:$HOME/scripts:$PATH"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
