@@ -65,6 +65,8 @@ install_packages() {
   "debian")
     sudo apt-get update -y
     sudo apt-get install -y "${packages[@]}"
+    sudo rm -f /usr/local/bin/bat
+    sudo ln -s /usr/bin/batcat /usr/local/bin/bat
     ;;
   *)
     echo "Error: Unsupported Linux distribution."
