@@ -13,7 +13,7 @@ function fish_prompt
             case arch
                 set prompt_icon  # Arch Linux icon
             case rhel
-                set prompt_icon  # RHEL icon
+                set prompt_icon 󱄛 # RHEL icon
             case fedora
                 set prompt_icon  # Fedora icon
             case debian

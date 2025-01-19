@@ -52,6 +52,7 @@ elif [[ $LINUX_DISTRO == "arch" ]]; then
   echo
   echo -e "After kernel update, reboot and re-generate initramfs: ${BLUE}"
   echo -e "sudo mkinitcpio -P ${NC}"
+  echo
 else
   echo "Unknown distro" >&2
   exit 1
