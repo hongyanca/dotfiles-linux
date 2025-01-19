@@ -57,6 +57,13 @@ else
   exit 1
 fi
 
+# Check if npm-check is available in $PATH
+if command -v npm-check &>/dev/null; then
+  npm-check -g
+else
+  :
+fi
+
 echo -e "${GREEN}"
 echo -e "System is up to date!${NC}"
 echo
