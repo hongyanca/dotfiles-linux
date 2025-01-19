@@ -112,7 +112,7 @@ install_npm_packages() {
   rm -rf "$HOME/.npm-packages/lib/node_modules/pyright"
   rm -rf "$HOME/.npm-packages/lib/node_modules/n"
   rm -rf "$HOME/.npm-packages/lib/node_modules/npm-check"
-  npm install tree-sitter-cli neovim pyright n npm-check -g
+  npm install tree-sitter-cli neovim pyright n npm-check npm -g
 }
 install_npm_packages
 
