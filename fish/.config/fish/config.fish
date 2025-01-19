@@ -21,6 +21,10 @@ alias lt='ls --tree'
 # set -x NVIM_APPNAME nvim-lazyvim  # LazyVim
 alias vi="nvim"
 alias vim="nvim"
+# Alt+E edit the current command line in an external editor.
+# The editor is chosen from the first available of the
+# $VISUAL or $EDITOR variables.
+set -x EDITOR nvim
 
 # Set up fzf key bindings
 fzf --fish | source
