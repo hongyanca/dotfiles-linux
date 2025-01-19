@@ -54,4 +54,4 @@ if test -f "$HOME/.cargo/env.fish"
 end
 
 # Set $PATH
-set -x PATH $PATH $NPM_PACKAGES/bin $HOME/.local/bin $HOME/scripts
+set -x PATH $NPM_PACKAGES/bin $HOME/.local/bin $HOME/scripts $PATH
