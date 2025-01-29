@@ -44,7 +44,8 @@ install_required_dependencies() {
     # Install basic packages.
     sudo dnf install -y wget curl zsh fish stow tar jq unzip bzip2 make git xclip \
       yum-utils gcc make python3-pip p7zip util-linux-user zsh-syntax-highlighting \
-      bat btop gdu
+      zlib-devel openssl-devel readline-devel libffi-devel xz-devel bzip2-devel \
+      sqlite-devel bat btop gdu
     python3 -m pip install --upgrade pip
     python3 -m pip install --user --upgrade pynvim
     # Install Node.js 22.x
@@ -57,7 +58,8 @@ install_required_dependencies() {
     # Install basic packages.
     sudo dnf install -y wget curl zsh fish stow tar jq unzip bzip2 make git xclip \
       yum-utils gcc make python3-pip p7zip util-linux-user zsh-syntax-highlighting \
-      bat btop gdu nodejs npm
+      zlib-devel openssl-devel readline-devel libffi-devel xz-devel bzip2-devel \
+      sqlite-devel bat btop gdu nodejs npm
     python3 -m pip install --upgrade pip
     python3 -m pip install --user --upgrade pynvim
   elif [[ $LINUX_DISTRO == "debian" ]]; then
@@ -65,6 +67,7 @@ install_required_dependencies() {
     sudo apt-get update
     sudo apt-get install -y wget curl zsh fish stow tar jq unzip bzip2 make git xclip \
       gcc make libbz2-dev python3-pip p7zip passwd zsh-syntax-highlighting \
+      build-essential libssl-dev zlib1g-dev libreadline-dev libsqlite3-dev \
       bat btop gdu
     # bat will be installed as batcat
     sudo rm -f /usr/local/bin/bat
