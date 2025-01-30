@@ -80,8 +80,9 @@ install_required_dependencies() {
     echo "Detected Arch-based distribution. Using pacman to install packages."
     sudo pacman -S --needed --noconfirm archlinux-keyring
     sudo pacman -Syu
-    sudo pacman -S --needed --noconfirm wget curl zsh fish stow tar jq unzip bzip2 make git xclip \
-      gcc make python python-pip p7zip util-linux zsh-syntax-highlighting \
+    sudo pacman -S --needed --noconfirm wget curl zsh fish stow tar jq git xclip \
+      gcc make python python-pip p7zip unzip util-linux zsh-syntax-highlighting \
+      openssl python-pyopenssl zlib readline libffi xz bzip2 sqlite \
       bat btop gdu nodejs npm
     sudo rm -f /usr/share/zsh-syntax-highlighting
     sudo ln -s /usr/share/zsh/plugins/zsh-syntax-highlighting /usr/share/zsh-syntax-highlighting
