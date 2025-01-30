@@ -3,33 +3,35 @@
 # Get the CPU architecture
 ARCH=$(uname -m)
 
-# Check if the architecture is aarch64
-if [ "$ARCH" != "x86_64" ]; then
-  echo "Warning: This script is designed for x86_64 architecture, but the current architecture is $ARCH."
-  exit 1
-fi
-
-# GitHub API URL for Neovim releases
-GITHUB_API_URL="https://api.github.com/repos/neovim/neovim/releases"
-
 # Detect OS
 OS=$(uname -s)
 
-# Set variables based on OS
-case "$OS" in
-Darwin)
+# Set variables based on OS and architecture
+case "$OS-$ARCH" in
+"Darwin-x86_64")
   INSTALL_DIR="$HOME/Applications/nvim-macos-x86_64"
   PACKAGE_NAME="nvim-macos-x86_64.tar.gz"
   ;;
-Linux)
+"Darwin-arm64")
+  INSTALL_DIR="$HOME/Applications/nvim-macos-arm64"
+  PACKAGE_NAME="nvim-macos-arm64.tar.gz"
+  ;;
+"Linux-x86_64")
   INSTALL_DIR="$HOME/.local/nvim-linux-x86_64"
   PACKAGE_NAME="nvim-linux-x86_64.tar.gz"
   ;;
+"Linux-aarch64")
+  INSTALL_DIR="$HOME/.local/nvim-linux-arm64"
+  PACKAGE_NAME="nvim-linux-arm64.tar.gz"
+  ;;
 *)
-  echo "Unsupported OS: $OS"
+  echo "Unsupported OS or architecture: $OS-$ARCH"
   exit 1
   ;;
 esac
+
+# GitHub API URL for Neovim releases
+GITHUB_API_URL="https://api.github.com/repos/neovim/neovim/releases"
 
 # Temporary file path for the downloaded package
 PACKAGE_PATH="/tmp/$PACKAGE_NAME"
