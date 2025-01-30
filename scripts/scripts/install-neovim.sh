@@ -22,8 +22,8 @@ Darwin)
   PACKAGE_NAME="nvim-macos-x86_64.tar.gz"
   ;;
 Linux)
-  INSTALL_DIR="$HOME/.local/nvim-linux64"
-  PACKAGE_NAME="nvim-linux64.tar.gz"
+  INSTALL_DIR="$HOME/.local/nvim-linux-x86_64"
+  PACKAGE_NAME="nvim-linux-x86_64.tar.gz"
   ;;
 *)
   echo "Unsupported OS: $OS"
