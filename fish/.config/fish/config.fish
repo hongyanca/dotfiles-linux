@@ -48,6 +48,13 @@ alias j='z'
 # Install NPM into home directory with distribution nodejs package
 set -x NPM_PACKAGES "$HOME/.npm-packages"
 
+# Set up pyenv
+set -x PYENV_ROOT $HOME/.pyenv
+if test -f "$HOME/.pyenv/bin/pyenv"
+    set -x PATH $PYENV_ROOT/bin $PATH
+    pyenv init - fish | source
+end
+
 # Cargo env
 if test -f "$HOME/.cargo/env.fish"
     source "$HOME/.cargo/env.fish"
