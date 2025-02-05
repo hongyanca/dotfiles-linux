@@ -65,6 +65,13 @@ else
   :
 fi
 
+# Check if uv is available in $PATH
+if command -v uv &>/dev/null; then
+  uv self update
+else
+  :
+fi
+
 echo -e "${GREEN}"
 echo -e "System is up to date!${NC}"
 echo
