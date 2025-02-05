@@ -57,8 +57,10 @@ sudo cloud-init clean
 
 echo "Deleting shell history..."
 sudo rm -f /root/.bash_history
-echo '' > "$HOME/.bash_history"
-echo '' > "$HOME/.zsh_history"
+echo '' >"$HOME/.bash_history"
+echo '' >"$HOME/.zsh_history"
+echo '' >"$HOME/.viminfo"
+rm -f "$HOME/.zcompdump*"
 
 echo "Shutting down system in 3 seconds..."
 sleep 3
