@@ -62,6 +62,11 @@ echo '' >"$HOME/.zsh_history"
 echo '' >"$HOME/.viminfo"
 rm -f "$HOME/.zcompdump*"
 
-echo "Shutting down system in 3 seconds..."
-sleep 3
-sudo shutdown -h now
+# Check for the 'noshutdown' argument
+if [[ "$1" != "noshutdown" ]]; then
+  echo "Shutting down system in 3 seconds..."
+  sleep 3
+  sudo shutdown -h now
+else
+  echo "Skipping shutdown as 'noshutdown' argument is present."
+fi
