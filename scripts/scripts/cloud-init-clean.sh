@@ -54,6 +54,7 @@ purge_pkg_mgr_cache
 
 echo "Resetting the cloud-init configuration to a clean state..."
 sudo cloud-init clean
+sudo rm -rf /var/lib/cloud/instances
 
 echo "Deleting shell history..."
 sudo rm -f /root/.bash_history
