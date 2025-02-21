@@ -73,6 +73,15 @@ NPM_PACKAGES="$HOME/.npm-packages"
 
 export PATH="$NPM_PACKAGES/bin:$HOME/.local/bin:$HOME/scripts:$PATH"
 
+# Set up pnpm
+if [[ -x "$HOME/.local/share/pnpm/pnpm" ]]; then
+  export PNPM_HOME="/home/yanh/.local/share/pnpm"
+  case ":$PATH:" in
+    *":$PNPM_HOME:"*) ;;
+    *) export PATH="$PNPM_HOME:$PATH" ;;
+  esac
+fi
+
 export PYENV_ROOT="$HOME/.pyenv"
 [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
 [[ -d $PYENV_ROOT/bin ]] && eval "$(pyenv init - zsh)"
