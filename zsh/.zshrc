@@ -64,6 +64,15 @@ NPM_PACKAGES="$HOME/.npm-packages"
 
 export PATH="$NPM_PACKAGES/bin:$HOME/.local/bin:$HOME/scripts:$PATH"
 
+# Set up pnpm
+if [[ -x "$HOME/.local/share/pnpm/pnpm" ]]; then
+  export PNPM_HOME="/home/yanh/.local/share/pnpm"
+  case ":$PATH:" in
+    *":$PNPM_HOME:"*) ;;
+    *) export PATH="$PNPM_HOME:$PATH" ;;
+  esac
+fi
+
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 source ~/.p10k/powerlevel10k.zsh-theme
