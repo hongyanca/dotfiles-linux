@@ -42,6 +42,11 @@ HISTSIZE=500000
 eval "$(zoxide init zsh)"
 alias j='z'
 
+# Set up ShellGPT
+if [[ -x "$HOME/.local/bin/uvx" ]]; then
+  alias sgpt="$HOME/.local/bin/uvx --from shell-gpt sgpt"
+fi
+
 source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # Set up yazi `y` shell wrapper that provides the ability to

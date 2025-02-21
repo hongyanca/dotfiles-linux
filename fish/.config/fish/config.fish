@@ -60,5 +60,10 @@ if test -f "$HOME/.cargo/env.fish"
     source "$HOME/.cargo/env.fish"
 end
 
+# ShellGPT
+if test -f "$HOME/.local/bin/uvx"
+    alias sgpt="$HOME/.local/bin/uvx --from shell-gpt sgpt"
+end
+
 # Set $PATH
 set -x PATH $PATH $NPM_PACKAGES/bin $HOME/.local/bin $HOME/scripts
