@@ -47,6 +47,11 @@ if [[ -x "$HOME/.local/bin/uvx" ]]; then
   alias sgpt="$HOME/.local/bin/uvx --from shell-gpt sgpt"
 fi
 
+# Check if the API keys export script exists and source it
+if [[ -f "$HOME/.llm-provider/export-api-keys.sh" ]]; then
+    source "$HOME/.llm-provider/export-api-keys.sh"
+fi
+
 source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # Set up yazi `y` shell wrapper that provides the ability to

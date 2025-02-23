@@ -65,5 +65,10 @@ if test -f "$HOME/.local/bin/uvx"
     alias sgpt="$HOME/.local/bin/uvx --from shell-gpt sgpt"
 end
 
+# Check if the API keys export script exists and source it
+if test -f "$HOME/.llm-provider/export-api-keys.fish"
+    source "$HOME/.llm-provider/export-api-keys.fish"
+end
+
 # Set $PATH
 set -x PATH $PATH $NPM_PACKAGES/bin $HOME/.local/bin $HOME/scripts
