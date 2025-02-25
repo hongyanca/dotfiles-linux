@@ -102,6 +102,7 @@ install_version() {
       if [ "$OS" = "Darwin" ]; then
         tar -xzf "$PACKAGE_PATH" -C "$HOME/Applications/"
       elif [ "$OS" = "Linux" ]; then
+        mkdir -p "$HOME/.local/"
         tar -xzf "$PACKAGE_PATH" -C "$HOME/.local/"
       fi
 
