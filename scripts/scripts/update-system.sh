@@ -48,6 +48,7 @@ elif [[ $LINUX_DISTRO == "debian" ]]; then
 elif [[ $LINUX_DISTRO == "arch" ]]; then
   sudo pacman -S --needed archlinux-keyring
   sudo pacman -Syu
+  sudo needrestart -r a
   # sudo pacman -Sc
   echo
   echo -e "After kernel update, reboot and re-generate initramfs: ${BLUE}"
