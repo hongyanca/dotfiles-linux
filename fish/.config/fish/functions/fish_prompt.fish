@@ -41,7 +41,6 @@ function fish_prompt
     else
         string join '' -- (set_color cyan) $prompt_icon ' ' (prompt_pwd) (fish_git_prompt) (set_color normal) $stat (set_color cyan) '  '
     end
-
 end
 
 function fish_right_prompt
