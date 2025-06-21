@@ -21,6 +21,8 @@ alias lt='ls --tree'
 alias vi='nvim'
 alias vim='nvim'
 
+alias k='kubectl'
+
 # Set up fzf key bindings and fuzzy completion
 source <(fzf --zsh)
 export FZF_DEFAULT_COMMAND="fd --exclude={.git,.idea,.vscode,.sass-cache,node_modules,build} --type f"
@@ -41,11 +43,6 @@ HISTSIZE=500000
 # Set up zoxide
 eval "$(zoxide init zsh)"
 alias j='z'
-
-# Set up ShellGPT
-if [[ -x "$HOME/.local/bin/uvx" ]]; then
-  alias sgpt="$HOME/.local/bin/uvx --from shell-gpt sgpt"
-fi
 
 # Check if the API keys export script exists and source it
 if [[ -f "$HOME/.llm-provider/export-api-keys.sh" ]]; then
@@ -72,10 +69,6 @@ NPM_PACKAGES="$HOME/.npm-packages"
 # export MANPATH="${MANPATH-$(manpath)}:$NPM_PACKAGES/share/man"
 
 export PATH="$NPM_PACKAGES/bin:$HOME/.local/bin:$HOME/scripts:$PATH"
-
-export PYENV_ROOT="$HOME/.pyenv"
-[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
-[[ -d $PYENV_ROOT/bin ]] && eval "$(pyenv init - zsh)"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

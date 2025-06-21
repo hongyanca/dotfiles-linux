@@ -15,6 +15,8 @@ alias ll='ls -la'
 alias lla='ls -la'
 alias lt='ls --tree'
 
+alias k='kubectl'
+
 # set -x _nvim_binary "/usr/bin/nvim"
 # alias nvim="$_nvim_binary"
 # set -x NVIM_APPNAME nvim          # kickstart or other
@@ -48,21 +50,9 @@ alias j='z'
 # Install NPM into home directory with distribution nodejs package
 set -x NPM_PACKAGES "$HOME/.npm-packages"
 
-# Set up pyenv
-set -x PYENV_ROOT $HOME/.pyenv
-if test -f "$HOME/.pyenv/bin/pyenv"
-    set -x PATH $PYENV_ROOT/bin $PATH
-    pyenv init - fish | source
-end
-
 # Cargo env
 if test -f "$HOME/.cargo/env.fish"
     source "$HOME/.cargo/env.fish"
-end
-
-# ShellGPT
-if test -f "$HOME/.local/bin/uvx"
-    alias sgpt="$HOME/.local/bin/uvx --from shell-gpt sgpt"
 end
 
 # Check if the API keys export script exists and source it
