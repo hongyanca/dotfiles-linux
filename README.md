@@ -12,6 +12,7 @@ This repo contains configuration files for tools and applications I use daily, s
 - **Editors**: `neovim`
 - **Terminal Tools**: `tmux`
 - **Version Control Tools**: `git`
+- **The front-end to your dev env**: `mise`
 - **Utility Shell Scripts**: Handy scripts for everyday tasks (e.g., update system, install Neovim, install modern alternative Linux utilities)
 - And more!
 
@@ -147,6 +148,16 @@ sudo chsh -s $(which zsh) $USER
      stow fish
      ```
      
+   - **mise**
+   
+     ```bash
+     mkdir -p ~/.config
+     rm -rf ~/.config/mise
+     
+     cd ~/.dotfiles
+     stow mise
+     ```
+     
    - **scripts**
    
      ```bash
@@ -177,6 +188,7 @@ sudo chsh -s $(which zsh) $USER
 ├── tmux/                  # Tmux configurations
 ├── zsh/                   # Zsh configurations
 ├── fish/                  # Fish configurations
+├── mise/                  # The front-end to your dev env
 ├── scripts/               # Handy utility shell scripts
 └── quick-install.sh       # A single script that does all
 ```
