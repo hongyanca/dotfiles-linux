@@ -12,7 +12,6 @@ This repo contains configuration files for tools and applications I use daily, s
 - **Editors**: `neovim`
 - **Terminal Tools**: `tmux`
 - **Version Control Tools**: `git`
-- **File Manager**: `yazi` (a fast, modern terminal file manager)
 - **Utility Shell Scripts**: Handy scripts for everyday tasks (e.g., update system, install Neovim, install modern alternative Linux utilities)
 - And more!
 
@@ -148,16 +147,6 @@ sudo chsh -s $(which zsh) $USER
      stow fish
      ```
      
-   - **yazi**
-   
-     ```bash
-     mkdir -p ~/.config
-     rm -rf ~/.config/yazi
-     
-     cd ~/.dotfiles
-     stow yazi
-     ```
-   
    - **scripts**
    
      ```bash
@@ -166,12 +155,13 @@ sudo chsh -s $(which zsh) $USER
      cd ~/.dotfiles
      stow scripts
      ```
+     
    
 4. **Undo a Configuration**:
 
    ```bash
    cd ~/.dotfiles
-   stow -D [zsh|fish|yazi|...]
+   stow -D [zsh|fish|...]
    ```
 
 5. **Customize Your Setup**: Edit files to your heart's content and push changes back to this repo to version control your tweaks.
@@ -187,7 +177,6 @@ sudo chsh -s $(which zsh) $USER
 ├── tmux/                  # Tmux configurations
 ├── zsh/                   # Zsh configurations
 ├── fish/                  # Fish configurations
-├── yazi/                  # Yazi terminal file manager configurations
 ├── scripts/               # Handy utility shell scripts
 └── quick-install.sh       # A single script that does all
 ```
