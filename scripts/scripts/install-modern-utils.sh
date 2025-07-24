@@ -43,7 +43,7 @@ get_distro
 declare -A DISTRO_PACKAGES
 DISTRO_PACKAGES["rhel"]="bat btop gdu git-delta fzf ripgrep zoxide"
 DISTRO_PACKAGES["fedora"]="bat btop gdu git-delta fzf ripgrep zoxide lsd"
-DISTRO_PACKAGES["arch"]="bat btop gdu git-delta fzf ripgrep zoxide lsd fd lazygit fastfetch yazi"
+DISTRO_PACKAGES["arch"]="bat btop gdu git-delta fzf ripgrep zoxide lsd fd lazygit fastfetch"
 DISTRO_PACKAGES["debian"]="bat btop gdu"
 
 # Function to install packages based on distribution
@@ -221,14 +221,8 @@ function install_fastfetch() {
     "fastfetch --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
     "linux-amd64.tar.gz"
 }
-function install_yazi() {
-  install_latest_release_from_gh "sxyazi/yazi" \
-    "yazi --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
-    "x86_64-unknown-linux-musl.zip"
-  # Install yazi cli tool ya for plugin/flavor management
-  install_latest_release_from_gh "sxyazi/yazi" \
-    "ya --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
-    "x86_64-unknown-linux-musl.zip" "ya"
+function install_mise() {
+  curl https://mise.run | sh
 }
 
 case "$LINUX_DISTRO" in
@@ -237,16 +231,16 @@ case "$LINUX_DISTRO" in
   install_fd
   install_lazygit
   install_fastfetch
-  install_yazi
+  install_mise
   ;;
 "fedora")
   install_fd
   install_lazygit
   install_fastfetch
-  install_yazi
+  install_mise
   ;;
 "arch")
-  :
+  install_mise
   ;;
 "debian")
   install_git-delta
@@ -257,7 +251,7 @@ case "$LINUX_DISTRO" in
   install_fd
   install_lazygit
   install_fastfetch
-  install_yazi
+  install_mise
   ;;
 *)
   echo "Error: Unsupported Linux distribution."

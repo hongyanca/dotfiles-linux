@@ -32,17 +32,6 @@ set -x EDITOR nvim
 fzf --fish | source
 set -x FZF_DEFAULT_COMMAND "fd --exclude={.git,.idea,.vscode,.sass-cache,node_modules,build} --type f"
 
-# Set up yazi `y` shell wrapper that provides the ability to
-# change the current working directory when exiting Yazi.
-function y
-    set tmp (mktemp -t "yazi-cwd.XXXXXX")
-    yazi $argv --cwd-file="$tmp"
-    if set cwd (command cat -- "$tmp"); and [ -n "$cwd" ]; and [ "$cwd" != "$PWD" ]
-        builtin cd -- "$cwd"
-    end
-    rm -f -- "$tmp"
-end
-
 # Set up zoxide
 zoxide init fish | source
 alias j='z'
@@ -53,6 +42,11 @@ set -x NPM_PACKAGES "$HOME/.npm-packages"
 # Cargo env
 if test -f "$HOME/.cargo/env.fish"
     source "$HOME/.cargo/env.fish"
+end
+
+# Set up mise
+if test -f "$HOME/.local/bin/mise"
+    "$HOME/.local/bin/mise" activate fish | source
 end
 
 # Check if the API keys export script exists and source it

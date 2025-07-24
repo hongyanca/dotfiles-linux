@@ -88,9 +88,9 @@ cd ~/.dotfiles || exit
 stow fish
 
 mkdir -p ~/.config
-rm -rf ~/.config/yazi
+rm -rf ~/.config/mise
 cd ~/.dotfiles || exit
-stow yazi
+stow mise
 
 mkdir -p ~/scripts
 cd ~/.dotfiles || exit
