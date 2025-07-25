@@ -78,6 +78,15 @@ else
   :
 fi
 
+# Update mise and tools
+if command -v mise >/dev/null 2>&1; then
+  mise self-update -y
+  mise up -y
+  mise prune -y
+else
+  :
+fi
+
 echo -e "${GREEN}"
 echo -e "System is up to date!${NC}"
 echo
