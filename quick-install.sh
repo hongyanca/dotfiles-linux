@@ -37,7 +37,9 @@ install_required_dependencies() {
     echo "Detected RHEL-based distribution. Using dnf to install packages."
     sudo dnf upgrade --refresh -y
     # Install basic packages.
-    sudo dnf install -y git wget curl tar jq unzip bzip2 yum-utils
+    sudo dnf install -y git wget curl tar jq unzip bzip2 yum-utils open-vm-tools
+    sudo dnf config-manager --set-enabled crb
+    sudo dnf install epel-release -y
   elif [[ $LINUX_DISTRO == "fedora" ]]; then
     echo "Detected Fedora-based distribution. Using dnf to install packages."
     sudo dnf upgrade --refresh -y
