@@ -37,21 +37,29 @@ get_distro
 
 # Basic packages: wget curl zsh fish stow tar jq unzip bzip2 make git xclip
 install_required_dependencies() {
+  # Install mise. https://mise.jdx.dev/getting-started.html
+  curl https://mise.run | sh
+  eval "$(~/.local/bin/mise activate bash)"
+  mise i uv ruff
+  mise use --global node@22
+
   # Install packages based on the LINUX_DISTRO value
   if [[ $LINUX_DISTRO == "rhel" ]]; then
     echo "Detected RHEL-based distribution. Using dnf to install packages."
     sudo dnf upgrade --refresh -y
+    # Must manually instal GNU stow, xclip, zsh-syntax-highlighting on RHEL-based distributions
+    cd /tmp || exit 1
+    wget https://rpmfind.net/linux/fedora/linux/releases/42/Everything/x86_64/os/Packages/s/stow-2.4.1-2.fc42.noarch.rpm
+    sudo yum localinstall -y stow-2.4.1-2.fc42.noarch.rpm
+    wget https://rpmfind.net/linux/opensuse/distribution/leap/15.6/repo/oss/x86_64/xclip-0.13-150400.9.3.1.x86_64.rpm
+    wget https://rpmfind.net/linux/fedora/linux/development/rawhide/Everything/x86_64/os/Packages/z/zsh-syntax-highlighting-0.8.0-5.fc42.noarch.rpm
+    sudo yum localinstall -y xclip-0.13-150400.9.3.1.x86_64.rpm zsh-syntax-highlighting-0.8.0-5.fc42.noarch.rpm
     # Install basic packages.
-    sudo dnf install -y wget curl zsh fish stow tar jq unzip bzip2 make git xclip \
-      yum-utils gcc make python3-pip p7zip util-linux-user zsh-syntax-highlighting \
-      zlib-devel openssl-devel readline-devel libffi-devel xz-devel bzip2-devel \
-      sqlite-devel bat btop gdu
+    sudo dnf install -y wget curl zsh fish tar jq unzip bzip2 make git sqlite-devel \
+      yum-utils gcc make python3-pip p7zip util-linux-user bat btop gdu \
+      zlib-devel openssl-devel readline-devel libffi-devel xz-devel bzip2-devel
     python3 -m pip install --upgrade pip
     python3 -m pip install --user --upgrade pynvim
-    # Install Node.js 22.x
-    # Use `sudo dnf module list nodejs` to list available Node.js versions
-    # Use `sudo dnf module reset nodejs:20/common` to reset the default version
-    sudo dnf module install nodejs:22/common
   elif [[ $LINUX_DISTRO == "fedora" ]]; then
     echo "Detected Fedora-based distribution. Using dnf to install packages."
     sudo dnf upgrade --refresh -y
