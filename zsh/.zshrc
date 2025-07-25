@@ -56,13 +56,7 @@ if [[ -f "$HOME/.local/bin/mise" ]]; then
   eval "$($HOME/.local/bin/mise activate zsh)"
 fi
 
-# Install NPM into home directory with distribution nodejs package
-NPM_PACKAGES="$HOME/.npm-packages"
-# Run ` npm config set prefix "$HOME/.npm-packages" `
-# before installing npm packages globally.
-# export MANPATH="${MANPATH-$(manpath)}:$NPM_PACKAGES/share/man"
-
-export PATH="$NPM_PACKAGES/bin:$HOME/.local/bin:$HOME/scripts:$PATH"
+export PATH="$HOME/.local/bin:$HOME/scripts:$PATH"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
