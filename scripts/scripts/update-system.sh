@@ -61,7 +61,7 @@ fi
 
 # Check if npm-check is available in $PATH
 if command -v npm-check &>/dev/null; then
-  npm-check -g
+  npm-check --global --update-all
 else
   :
 fi
@@ -70,7 +70,8 @@ fi
 if command -v uv >/dev/null 2>&1; then
   UV_PATH=$(which uv)
   if echo "$UV_PATH" | grep -q "mise"; then
-    mise i uv ruff
+    # Use mise to update uv and tools
+    :
   else
     uv self update && uv tool upgrade --all
   fi

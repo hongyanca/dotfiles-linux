@@ -40,7 +40,8 @@ install_required_dependencies() {
   # Install mise. https://mise.jdx.dev/getting-started.html
   curl https://mise.run | sh
   eval "$(~/.local/bin/mise activate bash)"
-  mise i uv ruff
+  mise i uv
+  rm -f "$HOME/.npmrc"
   mise use --global node@22
 
   # Install packages based on the LINUX_DISTRO value
@@ -67,7 +68,7 @@ install_required_dependencies() {
     sudo dnf install -y wget curl zsh fish stow tar jq unzip bzip2 make git xclip \
       yum-utils gcc make python3-pip p7zip util-linux-user zsh-syntax-highlighting \
       zlib-devel openssl-devel readline-devel libffi-devel xz-devel bzip2-devel \
-      sqlite-devel bat btop gdu nodejs npm
+      sqlite-devel bat btop gdu
     python3 -m pip install --upgrade pip
     python3 -m pip install --user --upgrade pynvim
   elif [[ $LINUX_DISTRO == "debian" ]]; then
@@ -82,8 +83,6 @@ install_required_dependencies() {
     sudo ln -s /usr/bin/batcat /usr/local/bin/bat
     python3 -m pip install --upgrade pip --break-system-packages
     python3 -m pip install --user --upgrade pynvim --break-system-packages
-    # Install Node.js 22.x
-    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt-get install -y nodejs
   elif [[ $LINUX_DISTRO == "arch" ]]; then
     echo "Detected Arch-based distribution. Using pacman to install packages."
     sudo pacman -S --needed --noconfirm archlinux-keyring
@@ -91,7 +90,7 @@ install_required_dependencies() {
     sudo pacman -S --needed --noconfirm wget curl zsh fish stow tar jq git xclip \
       gcc make python python-pip p7zip unzip util-linux zsh-syntax-highlighting \
       openssl python-pyopenssl zlib readline libffi xz bzip2 sqlite \
-      bat btop gdu nodejs npm
+      bat btop gdu
     sudo rm -f /usr/share/zsh-syntax-highlighting
     sudo ln -s /usr/share/zsh/plugins/zsh-syntax-highlighting /usr/share/zsh-syntax-highlighting
     python3 -m pip install --upgrade pip --break-system-packages
@@ -103,30 +102,8 @@ install_required_dependencies() {
 }
 install_required_dependencies
 
-install_npm_packages() {
-  # Install npm packages globally without sudo
-  mkdir -p "$HOME/.npm-packages"
-  npm config set prefix "$HOME/.npm-packages"
-  export NPM_PACKAGES="$HOME/.npm-packages"
-  export PATH="$PATH:$NPM_PACKAGES/bin"
-  USER_GRP="$(id -un):$(id -gn)"
-  sudo mkdir -p /usr/local/n
-  sudo chown -R "$USER_GRP" "/usr/local/n"
-  sudo chown -R "$USER_GRP" "/usr/local/lib"
-  sudo chown -R "$USER_GRP" "/usr/local/bin"
-  sudo chown -R "$USER_GRP" "/usr/local/include"
-  sudo chown -R "$USER_GRP" "/usr/local/share"
-  sudo chown -R "$USER_GRP" "/usr/local/share/man/"
-  echo "Installing Node.js global packages..."
-  npm cache clean --force
-  rm -rf "$HOME/.npm-packages/lib/node_modules/tree-sitter-cli"
-  rm -rf "$HOME/.npm-packages/lib/node_modules/neovim"
-  rm -rf "$HOME/.npm-packages/lib/node_modules/pyright"
-  rm -rf "$HOME/.npm-packages/lib/node_modules/n"
-  rm -rf "$HOME/.npm-packages/lib/node_modules/npm-check"
-  npm install tree-sitter-cli neovim pyright n npm-check npm -g
-}
-install_npm_packages
+# Install npm packages globally
+npm install -g tree-sitter-cli neovim pyright npm-check npm
 
 # Install modern utilities
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/hongyanca/dotfiles-linux/refs/heads/main/scripts/scripts/install-modern-utils.sh)"
