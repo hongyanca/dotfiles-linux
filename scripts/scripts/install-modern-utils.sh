@@ -41,7 +41,7 @@ get_distro
 
 # KV Map of Linux Distributions and their packages
 declare -A DISTRO_PACKAGES
-DISTRO_PACKAGES["rhel"]="bat btop gdu git-delta fzf ripgrep zoxide"
+DISTRO_PACKAGES["rhel"]="bat btop gdu fzf ripgrep"
 DISTRO_PACKAGES["fedora"]="bat btop gdu git-delta fzf ripgrep zoxide lsd"
 DISTRO_PACKAGES["arch"]="bat btop gdu git-delta fzf ripgrep zoxide lsd fd lazygit fastfetch"
 DISTRO_PACKAGES["debian"]="bat btop gdu"
@@ -221,26 +221,23 @@ function install_fastfetch() {
     "fastfetch --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
     "linux-amd64.tar.gz"
 }
-function install_mise() {
-  curl https://mise.run | sh
-}
 
 case "$LINUX_DISTRO" in
 "rhel")
+  install_git-delta
   install_lsd
+  install_zoxide
   install_fd
   install_lazygit
   install_fastfetch
-  install_mise
   ;;
 "fedora")
   install_fd
   install_lazygit
   install_fastfetch
-  install_mise
   ;;
 "arch")
-  install_mise
+  :
   ;;
 "debian")
   install_git-delta
@@ -251,7 +248,6 @@ case "$LINUX_DISTRO" in
   install_fd
   install_lazygit
   install_fastfetch
-  install_mise
   ;;
 *)
   echo "Error: Unsupported Linux distribution."
