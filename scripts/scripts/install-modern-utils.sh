@@ -199,7 +199,7 @@ function install_fd() {
 function install_lazygit() {
   install_latest_release_from_gh "jesseduffield/lazygit" \
     "lazygit --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -1" \
-    "Linux_x86_64.tar.gz"
+    "linux_x86_64.tar.gz"
 }
 function install_lsd() {
   install_latest_release_from_gh "lsd-rs/lsd" \
