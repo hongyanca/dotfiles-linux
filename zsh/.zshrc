@@ -58,6 +58,13 @@ fi
 
 export PATH="$HOME/.local/bin:$HOME/scripts:$PATH"
 
+# Set up global npm packages path
+# mkdir "${HOME}/.npm-packages"
+# npm config set prefix "${HOME}/.npm-packages"
+if [[ -d "${HOME}/.npm-packages" ]]; then
+  export PATH="${HOME}/.npm-packages/bin:$PATH"
+fi
+
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 source ~/.p10k/powerlevel10k.zsh-theme
