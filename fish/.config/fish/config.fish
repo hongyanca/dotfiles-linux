@@ -36,6 +36,9 @@ set -x FZF_DEFAULT_COMMAND "fd --exclude={.git,.idea,.vscode,.sass-cache,node_mo
 zoxide init fish | source
 alias j='z'
 
+# Install NPM into home directory with distribution nodejs package
+set -x NPM_PACKAGES "$HOME/.npm-packages"
+
 # Cargo env
 if test -f "$HOME/.cargo/env.fish"
     source "$HOME/.cargo/env.fish"
@@ -52,4 +55,4 @@ if test -f "$HOME/.llm-provider/export-api-keys.fish"
 end
 
 # Set $PATH
-set -x PATH $PATH $HOME/.local/bin $HOME/scripts
+set -x PATH $PATH $NPM_PACKAGES/bin $HOME/.local/bin $HOME/scripts

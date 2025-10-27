@@ -46,7 +46,7 @@ alias j='z'
 
 # Check if the API keys export script exists and source it
 if [[ -f "$HOME/.llm-provider/export-api-keys.sh" ]]; then
-    source "$HOME/.llm-provider/export-api-keys.sh"
+  source "$HOME/.llm-provider/export-api-keys.sh"
 fi
 
 source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
@@ -65,6 +65,12 @@ if [[ -x "$HOME/.local/share/pnpm/pnpm" ]]; then
     *":$PNPM_HOME:"*) ;;
     *) export PATH="$PNPM_HOME:$PATH" ;;
   esac
+
+# Set up global npm packages path
+# mkdir "${HOME}/.npm-packages"
+# npm config set prefix "${HOME}/.npm-packages"
+if [[ -d "${HOME}/.npm-packages" ]]; then
+  export PATH="${HOME}/.npm-packages/bin:$PATH"
 fi
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
