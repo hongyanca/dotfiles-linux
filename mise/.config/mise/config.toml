@@ -3,5 +3,5 @@ idiomatic_version_file_enable_tools = ["python"]
 experimental = true
 
 [tools]
-node = "22"
+node = "24"
 uv = "latest"
