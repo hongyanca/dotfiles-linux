@@ -56,7 +56,7 @@ if [[ -f "$HOME/.local/bin/mise" ]]; then
   eval "$($HOME/.local/bin/mise activate zsh)"
 fi
 
-export PATH="$HOME/.local/bin:$HOME/scripts:$PATH"
+export PATH="$HOME/scripts:$PATH"
 
 # Set up global npm packages path
 # mkdir "${HOME}/.npm-packages"
