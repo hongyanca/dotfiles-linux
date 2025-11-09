@@ -41,8 +41,11 @@ install_required_dependencies() {
   curl https://mise.run | sh
   eval "$(~/.local/bin/mise activate bash)"
   mise i uv
+  # Install Node.js via mise and set up npm global packages directory
   rm -f "$HOME/.npmrc"
-  mise use --global node@22
+  mkdir "$HOME/.npm-packages"
+  mise use --global node@24
+  npm config set prefix "$HOME/.npm-packages"
 
   # Install packages based on the LINUX_DISTRO value
   if [[ $LINUX_DISTRO == "rhel" ]]; then
@@ -50,11 +53,11 @@ install_required_dependencies() {
     sudo dnf upgrade --refresh -y
     # Must manually instal GNU stow, xclip, zsh-syntax-highlighting on RHEL-based distributions
     cd /tmp || exit 1
-    wget https://rpmfind.net/linux/fedora/linux/releases/42/Everything/x86_64/os/Packages/s/stow-2.4.1-2.fc42.noarch.rpm
-    sudo yum localinstall -y stow-2.4.1-2.fc42.noarch.rpm
+    wget https://rpmfind.net/linux/fedora/linux/releases/43/Everything/x86_64/os/Packages/s/stow-2.4.1-3.fc43.noarch.rpm
+    sudo yum localinstall -y stow-2.4.1-3.fc43.noarch.rpm
     wget https://rpmfind.net/linux/opensuse/distribution/leap/15.6/repo/oss/x86_64/xclip-0.13-150400.9.3.1.x86_64.rpm
-    wget https://rpmfind.net/linux/fedora/linux/development/rawhide/Everything/x86_64/os/Packages/z/zsh-syntax-highlighting-0.8.0-5.fc42.noarch.rpm
-    sudo yum localinstall -y xclip-0.13-150400.9.3.1.x86_64.rpm zsh-syntax-highlighting-0.8.0-5.fc42.noarch.rpm
+    wget https://rpmfind.net/linux/fedora/linux/releases/43/Everything/x86_64/os/Packages/z/zsh-syntax-highlighting-0.8.0-6.fc43.noarch.rpm
+    sudo yum localinstall -y xclip-0.13-150400.9.3.1.x86_64.rpm zsh-syntax-highlighting-0.8.0-6.fc43.noarch.rpm
     # Install basic packages.
     sudo dnf install -y wget curl zsh fish tar jq unzip bzip2 make git sqlite-devel \
       yum-utils gcc make python3-pip p7zip util-linux-user bat btop gdu \
