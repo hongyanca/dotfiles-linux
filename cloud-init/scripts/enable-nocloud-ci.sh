@@ -5,6 +5,7 @@ sudo cp -f ~/.dotfiles/cloud-init/scripts/update-issue.sh /usr/local/bin/update-
 
 ###################################################################################################
 # Nocloud cloud-init configuration
+echo "Creating NoCloud cloud-init configuration files..."
 sudo mkdir -p /etc/cloud/cloud.cfg.d/
 cat <<EOF >/tmp/99-fake_cloud.cfg
 # Configure cloud-init for NoCloud
@@ -69,6 +70,9 @@ install_required_dependencies() {
     # Must manually config cloud-init for Fedora Linux
     # sudo cp -f ~/.dotfiles/cloud-init/rhel/cloud.cfg /etc/cloud/cloud.cfg
   elif [[ $LINUX_DISTRO == "debian" ]]; then
+    echo "Creating netplan configuration..."
+    sudo mkdir -p /etc/netplan
+    sudo cp -f ~/.dotfiles/cloud-init/ubuntu/50-cloud-init.yaml /etc/netplan/50-cloud-init.yaml
     echo "Detected Debian-based distribution. Using apt-get to install packages."
     sudo apt-get update
     sudo apt-get install -y cloud-init
