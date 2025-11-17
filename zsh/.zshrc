@@ -51,6 +51,12 @@ fi
 
 source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
+# Start ssh-agent if not already running
+if ! pgrep -u "$USER" ssh-agent > /dev/null; then
+  eval "$(ssh-agent -s)" > /dev/null 2>&1
+fi
+# ssh-add ~/.ssh/YOUR_GITHUB_SSH_PRIVATE_KEY > /dev/null 2>&1
+
 # Set up mise
 if [[ -f "$HOME/.local/bin/mise" ]]; then
   eval "$($HOME/.local/bin/mise activate zsh)"
