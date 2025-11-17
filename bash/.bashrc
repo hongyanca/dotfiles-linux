@@ -135,3 +135,11 @@ set colored-stats on
 
 ## Append ~/scripts/ to PATH ##############################################################################
 export PATH="$HOME/scripts:$PATH"
+
+# Set up global npm packages path
+# mkdir "${HOME}/.npm-packages"
+# npm config set prefix "${HOME}/.npm-packages"
+NPM_PACKAGES="$HOME/.npm-packages"
+if [[ -d "$NPM_PACKAGES" ]]; then
+  export PATH="$NPM_PACKAGES/bin:$PATH"
+fi
