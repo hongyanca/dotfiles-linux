@@ -74,6 +74,7 @@ rm -f ~/.gitignore_global
 rm -f ~/.gitconfig
 cd ~/.dotfiles || exit
 stow git
+cp -f ~/.dotfiles/git/.gitconfig_example ~/.gitconfig
 
 rm -f ~/.tmux.conf
 cd ~/.dotfiles || exit

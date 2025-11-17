@@ -105,6 +105,9 @@ install_required_dependencies() {
 }
 install_required_dependencies
 
+# Install starship prompt
+curl -sS https://starship.rs/install.sh | sh
+
 # Install npm packages globally
 npm install -g tree-sitter-cli neovim pyright npm-check npm
 
