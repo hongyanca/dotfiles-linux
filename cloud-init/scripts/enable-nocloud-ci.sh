@@ -35,6 +35,7 @@ get_distro() {
   distro_map["debian"]="debian"
   distro_map["ubuntu"]="debian"
   distro_map["arch"]="arch"
+  distro_map["cachyos"]="arch"
 
   # Read ID value
   ID=$(grep ^ID= /etc/os-release | cut -d= -f2 | tr -d '"')

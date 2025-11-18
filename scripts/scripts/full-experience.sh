@@ -15,6 +15,7 @@ get_distro() {
   distro_map["debian"]="debian"
   distro_map["ubuntu"]="debian"
   distro_map["arch"]="arch"
+  distro_map["cachyos"]="arch"
 
   # Read ID value
   ID=$(grep ^ID= /etc/os-release | cut -d= -f2 | tr -d '"')
@@ -83,7 +84,7 @@ install_required_dependencies() {
     sudo pacman -S --needed --noconfirm wget curl zsh fish stow tar jq git xclip \
       gcc make python python-pip p7zip unzip util-linux zsh-syntax-highlighting \
       openssl python-pyopenssl zlib readline libffi xz bzip2 sqlite \
-      bat btop gdu gpg
+      bat btop gdu gnupg
     sudo rm -f /usr/share/zsh-syntax-highlighting
     sudo ln -s /usr/share/zsh/plugins/zsh-syntax-highlighting /usr/share/zsh-syntax-highlighting
     python3 -m pip install --upgrade pip --break-system-packages

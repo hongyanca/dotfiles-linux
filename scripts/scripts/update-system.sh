@@ -7,27 +7,32 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 LINUX_DISTRO="unknown"
-# Function to set the LINUX_DISTRO variable based on the ID_LIKE or ID value
 get_distro() {
-  # Attempt to read the ID_LIKE value from /etc/os-release
-  ID_LIKE=$(grep ^ID_LIKE= /etc/os-release | cut -d= -f2 | tr -d '"')
+  # Declare an associative array for distro mappings
+  declare -A distro_map
+  distro_map["rhel"]="rhel"
+  distro_map["almalinux"]="rhel"
+  distro_map["fedora"]="fedora"
+  distro_map["debian"]="debian"
+  distro_map["ubuntu"]="debian"
+  distro_map["arch"]="arch"
+  distro_map["cachyos"]="arch"
 
-  # If ID_LIKE is empty, fall back to reading the ID value
-  if [[ -z $ID_LIKE ]]; then
-    ID_LIKE=$(grep ^ID= /etc/os-release | cut -d= -f2 | tr -d '"')
-  fi
+  # Read ID value
+  ID=$(grep ^ID= /etc/os-release | cut -d= -f2 | tr -d '"')
 
-  # Check if ID_LIKE contains "rhel" "fedora" "debian" or "arch"
-  if [[ $ID_LIKE == *"rhel"* ]]; then
-    LINUX_DISTRO="rhel"
-  elif [[ $ID_LIKE == *"fedora"* ]]; then
-    LINUX_DISTRO="fedora"
-  elif [[ $ID_LIKE == *"debian"* ]]; then
-    LINUX_DISTRO="debian"
-  elif [[ $ID_LIKE == *"arch"* ]]; then
-    LINUX_DISTRO="arch"
+  # Read the first word of ID_LIKE directly
+  ID_LIKE=$(grep ^ID_LIKE= /etc/os-release | cut -d= -f2 | tr -d '"' | awk '{print $1}')
+
+  # Check if the ID exists in our map
+  if [[ -n "$ID" ]] && [[ -v distro_map["$ID"] ]]; then
+    LINUX_DISTRO="${distro_map[$ID]}"
   else
-    LINUX_DISTRO="unknown"
+    # If ID is not in the map, check ID_LIKE
+    if [[ -n "$ID_LIKE" ]] && [[ -v distro_map["$ID_LIKE"] ]]; then
+      LINUX_DISTRO="${distro_map[$ID_LIKE]}"
+    fi
+    # If no match found, keep unknown
   fi
 }
 get_distro

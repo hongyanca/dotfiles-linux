@@ -11,6 +11,7 @@ get_distro() {
   distro_map["debian"]="debian"
   distro_map["ubuntu"]="debian"
   distro_map["arch"]="arch"
+  distro_map["cachyos"]="arch"
 
   # Read ID value
   ID=$(grep ^ID= /etc/os-release | cut -d= -f2 | tr -d '"')
@@ -54,7 +55,7 @@ install_required_dependencies() {
     echo "Detected Arch-based distribution. Using pacman to install packages."
     sudo pacman -S --needed --noconfirm archlinux-keyring
     sudo pacman -Syu
-    sudo pacman -S --needed --noconfirm git gpg wget curl tar jq unzip bzip2 util-linux bash-completion
+    sudo pacman -S --needed --noconfirm git gnupg wget curl tar jq unzip bzip2 util-linux bash-completion
   else
     echo "Unknown distro" >&2
     exit 1
