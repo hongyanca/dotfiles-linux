@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+###################################################################################################
 LINUX_DISTRO="unknown"
 get_distro() {
   # Declare an associative array for distro mappings
@@ -10,6 +11,7 @@ get_distro() {
   distro_map["debian"]="debian"
   distro_map["ubuntu"]="debian"
   distro_map["arch"]="arch"
+  distro_map["cachyos"]="arch"
 
   # Read ID value
   ID=$(grep ^ID= /etc/os-release | cut -d= -f2 | tr -d '"')
@@ -30,30 +32,30 @@ get_distro() {
 }
 get_distro
 
-# Basic packages: git wget curl tar jq unzip bzip2
+# Basic packages: git gpg wget curl tar jq unzip bzip2
 install_required_dependencies() {
   # Install packages based on the LINUX_DISTRO value
   if [[ $LINUX_DISTRO == "rhel" ]]; then
     echo "Detected RHEL-based distribution. Using dnf to install packages."
     sudo dnf upgrade --refresh -y
     # Install basic packages.
-    sudo dnf install -y git wget curl tar jq unzip bzip2 yum-utils open-vm-tools
+    sudo dnf install -y git gpg wget curl tar jq unzip bzip2 yum-utils open-vm-tools bash-completion
     sudo dnf config-manager --set-enabled crb
     sudo dnf install epel-release -y
   elif [[ $LINUX_DISTRO == "fedora" ]]; then
     echo "Detected Fedora-based distribution. Using dnf to install packages."
     sudo dnf upgrade --refresh -y
     # Install basic packages.
-    sudo dnf install -y git wget curl tar jq unzip bzip2 yum-utils
+    sudo dnf install -y git gpg wget curl tar jq unzip bzip2 yum-utils bash-completion
   elif [[ $LINUX_DISTRO == "debian" ]]; then
     echo "Detected Debian-based distribution. Using apt-get to install packages."
     sudo apt-get update
-    sudo apt-get install -y git wget curl tar jq unzip bzip2
+    sudo apt-get install -y git gpg wget curl tar jq unzip bzip2 bash-completion
   elif [[ $LINUX_DISTRO == "arch" ]]; then
     echo "Detected Arch-based distribution. Using pacman to install packages."
     sudo pacman -S --needed --noconfirm archlinux-keyring
     sudo pacman -Syu
-    sudo pacman -S --needed --noconfirm git wget curl tar jq unzip bzip2 util-linux
+    sudo pacman -S --needed --noconfirm git gnupg wget curl tar jq unzip bzip2 util-linux bash-completion
   else
     echo "Unknown distro" >&2
     exit 1
@@ -61,6 +63,7 @@ install_required_dependencies() {
 }
 install_required_dependencies
 
+###################################################################################################
 echo "Clone the Repository..."
 
 rm -rf ~/.dotfiles
@@ -68,12 +71,14 @@ git clone --depth=1 --single-branch --branch main https://github.com/hongyanca/d
 
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/hongyanca/dotfiles-linux/refs/heads/main/scripts/scripts/full-experience.sh)"
 
+###################################################################################################
 echo "Setting up symbolic links..."
 
 rm -f ~/.gitignore_global
 rm -f ~/.gitconfig
 cd ~/.dotfiles || exit
 stow git
+cp -f ~/.dotfiles/git/.gitconfig_example ~/.gitconfig
 
 rm -f ~/.tmux.conf
 cd ~/.dotfiles || exit
@@ -83,6 +88,10 @@ rm -rf ~/.p10k ~/.p10k.zsh ~/.zshrc
 git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.p10k
 cd ~/.dotfiles || exit
 stow zsh
+
+rm -rf ~/.bashrc
+cd ~/.dotfiles || exit
+stow bash
 
 mkdir -p ~/.config
 rm -rf ~/.config/fish
@@ -133,6 +142,12 @@ function remove_conflicting_scripts() {
 remove_conflicting_scripts
 stow scripts
 
+###################################################################################################
+echo "Copy xterminfo..."
+sudo cp -f ~/.dotfiles/terminfo/xterm-ghostty /usr/share/terminfo/x/
+sudo cp -f ~/.dotfiles/terminfo/xterm-kitty /usr/share/terminfo/x/
+
+###################################################################################################
 echo
 echo "# Replace Git's 'user.name' and 'user.email' with your own."
 echo "git config --global user.name "
