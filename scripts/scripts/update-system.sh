@@ -51,8 +51,9 @@ elif [[ $LINUX_DISTRO == "debian" ]]; then
   sudo NEEDRESTART_MODE=a apt-get -o APT::Get::Always-Include-Phased-Updates=true upgrade -y
   sudo apt-get autoremove -y
 elif [[ $LINUX_DISTRO == "arch" ]]; then
-  sudo pacman -S --needed archlinux-keyring
-  sudo pacman -Syu
+  sudo pacman -S --needed --noconfirm archlinux-keyring
+  sudo pacman -Syyu
+  yay -Syyu --noconfirm
   sudo needrestart -r a
   # sudo pacman -Sc
   echo
