@@ -20,21 +20,21 @@ set +h
 
 ## alias ################################################################################
 # File system
-if command -v eza &>/dev/null; then
-  alias ls='eza -lh --group-directories-first --icons=auto'
-  alias lsa='ls -a'
-  alias lt='eza --tree --level=2 --long --icons --git'
-  alias lta='lt -a'
-fi
+# if command -v eza &>/dev/null; then
+#  alias ls='eza -lh --group-directories-first --icons=auto'
+#  alias lsa='ls -a'
+#  alias lt='eza --tree --level=2 --long --icons --git'
+#  alias lta='lt -a'
+# fi
 
-if command -v lsd &>/dev/null; then
-  alias ls='lsd'
-  alias l='ls -l'
-  alias la='ls -a'
-  alias ll='ls -la'
-  alias lla='ls -la'
-  alias lt='ls --tree'
-fi
+# if command -v lsd &>/dev/null; then
+#  alias ls='lsd'
+#  alias lt='ls --tree'
+# fi
+alias l='ls -l'
+alias la='ls -a'
+alias ll='ls -la'
+alias lla='ls -la'
 
 alias ff="fzf --preview 'bat --style=numbers --color=always {}'"
 
