@@ -18,7 +18,9 @@ alias lt='ls --tree'
 alias k='kubectl'
 
 set -x _nvim_binary /usr/bin/nvim
+set -x _nvim_nightly_binary "$HOME/.local/nvim-linux-x86_64-nightly/bin/nvim"
 alias nvim="$_nvim_binary"
+# alias nvim="$_nvim_nightly_binary"
 set -x NVIM_APPNAME nvim # kickstart or other
 # set -x NVIM_APPNAME nvim-lazyvim # LazyVim
 alias vi="nvim"
