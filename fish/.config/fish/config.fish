@@ -17,10 +17,10 @@ alias lt='ls --tree'
 
 alias k='kubectl'
 
-# set -x _nvim_binary "/usr/bin/nvim"
-# alias nvim="$_nvim_binary"
-# set -x NVIM_APPNAME nvim          # kickstart or other
-# set -x NVIM_APPNAME nvim-lazyvim  # LazyVim
+set -x _nvim_binary /usr/bin/nvim
+alias nvim="$_nvim_binary"
+set -x NVIM_APPNAME nvim # kickstart or other
+# set -x NVIM_APPNAME nvim-lazyvim # LazyVim
 alias vi="nvim"
 alias vim="nvim"
 # Alt+E edit the current command line in an external editor.
@@ -36,9 +36,6 @@ set -x FZF_DEFAULT_COMMAND "fd --exclude={.git,.idea,.vscode,.sass-cache,node_mo
 zoxide init fish | source
 alias j='z'
 
-# Install NPM into home directory with distribution nodejs package
-set -x NPM_PACKAGES "$HOME/.npm-packages"
-
 # Cargo env
 if test -f "$HOME/.cargo/env.fish"
     source "$HOME/.cargo/env.fish"
@@ -47,6 +44,7 @@ end
 # Set up mise
 if test -f "$HOME/.local/bin/mise"
     "$HOME/.local/bin/mise" activate fish | source
+    set -x MISE_NODE_VERIFY false
 end
 
 # Check if the API keys export script exists and source it
@@ -54,5 +52,18 @@ if test -f "$HOME/.llm-provider/export-api-keys.fish"
     source "$HOME/.llm-provider/export-api-keys.fish"
 end
 
+# Install NPM into home directory with distribution nodejs package
+set -x NPM_PACKAGES "$HOME/.npm-packages"
+
 # Set $PATH
 set -x PATH $PATH $NPM_PACKAGES/bin $HOME/.local/bin $HOME/scripts
+
+# pnpm
+if test -f "$HOME/.local/share/pnpm/pnpm"
+    set -gx PNPM_HOME "$HOME/.local/share/pnpm"
+    if not string match -q -- $PNPM_HOME $PATH
+        set -gx PATH "$PNPM_HOME" $PATH
+    end
+    alias pn='pnpm'
+end
+# pnpm end

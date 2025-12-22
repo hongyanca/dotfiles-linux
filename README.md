@@ -8,7 +8,7 @@ Welcome to my Linux dotfiles repository! 🎉 This is where I store and manage t
 
 This repo contains configuration files for tools and applications I use daily, such as:
 
-- **Shells**: `zsh`, `fish`
+- **Shells**: `bash`, `zsh`, and `fish`
 - **Editors**: `neovim`
 - **Terminal Tools**: `tmux`
 - **Version Control Tools**: `git`
@@ -128,8 +128,17 @@ sudo chsh -s $(which zsh) $USER
      stow tmux
      ```
    
-   - **zsh**
+   - **bash**
 
+     ```
+     mv ~/.bashrc ~/.bashrc.backup
+     
+     cd ~/.dotfiles
+     stow bash
+     ```
+     
+   - **zsh**
+   
      ```bash
      rm -rf ~/.p10k ~/.p10k.zsh ~/.zshrc
      git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.p10k
@@ -183,13 +192,16 @@ sudo chsh -s $(which zsh) $USER
 
 ```
 .dotfiles/
-├── README.md              # You're here!
-├── git/                   # Git configurations
-├── tmux/                  # Tmux configurations
-├── zsh/                   # Zsh configurations
+├── bash/                  # Bash configurations
+├── cloud-init/            # cloud-init configurations and helper scripts
 ├── fish/                  # Fish configurations
+├── git/                   # Git configurations
 ├── mise/                  # The front-end to your dev env
 ├── scripts/               # Handy utility shell scripts
+├── terminfo/              # terminfo files for Ghostty and Kitty
+├── tmux/                  # Tmux configurations
+├── zsh/                   # Zsh configurations
+├── README.md              # You're here!
 └── quick-install.sh       # A single script that does all
 ```
 

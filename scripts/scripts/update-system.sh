@@ -68,6 +68,17 @@ fi
 # Check if npm-check is available in $PATH
 if command -v npm-check &>/dev/null; then
   npm-check --global --update-all
+  echo
+else
+  :
+fi
+
+# Check if pnpm is available in $PATH
+if command -v pnpm &>/dev/null; then
+  echo "Updating global pnpm packages..."
+  pnpm outdated --global
+  pnpm update --global --latest
+  echo
 else
   :
 fi

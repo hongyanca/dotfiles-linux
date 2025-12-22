@@ -72,6 +72,15 @@ if [[ -d "$NPM_PACKAGES" ]]; then
   export PATH="$NPM_PACKAGES/bin:$PATH"
 fi
 
+# pnpm
+if [[ -f "$HOME/.local/share/pnpm/pnpm" ]]; then
+    export PNPM_HOME="$HOME/.local/share/pnpm"
+    # Only add to PATH if it isn't already there
+    [[ ":$PATH:" != *":$PNPM_HOME:"* ]] && export PATH="$PNPM_HOME:$PATH"
+    alias pn='pnpm'
+fi
+# pnpm end
+
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 source ~/.p10k/powerlevel10k.zsh-theme

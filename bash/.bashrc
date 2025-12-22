@@ -133,7 +133,7 @@ set skip-completed-text on
 # Coloring for Bash 4 tab completions.
 set colored-stats on
 
-## Append ~/scripts/ to PATH ##############################################################################
+##### Append ~/scripts/ to PATH #####
 export PATH="$HOME/scripts:$PATH"
 
 # Set up global npm packages path
@@ -143,3 +143,14 @@ NPM_PACKAGES="$HOME/.npm-packages"
 if [[ -d "$NPM_PACKAGES" ]]; then
   export PATH="$NPM_PACKAGES/bin:$PATH"
 fi
+
+# pnpm
+if [ -f "$HOME/.local/share/pnpm/pnpm" ]; then
+  export PNPM_HOME="$HOME/.local/share/pnpm"
+  case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+  esac
+  alias pn='pnpm'
+fi
+# pnpm end
