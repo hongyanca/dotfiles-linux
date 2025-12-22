@@ -43,6 +43,11 @@ install_version() {
   local version
   local display_version
 
+  # Add -nightly suffix to INSTALL_DIR for nightly/prerelease installations
+  if [ "$version_type" = "nightly" ] || [ "$version_type" = "prerelease" ]; then
+    INSTALL_DIR="${INSTALL_DIR}-nightly"
+  fi
+
   if [ "$version_type" = "nightly" ] || [ "$version_type" = "prerelease" ]; then
     # Fetch the JSON response using curl
     response=$(curl -s "$GITHUB_API_URL")
