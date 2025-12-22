@@ -74,14 +74,14 @@ else
 fi
 
 # Check if pnpm is available in $PATH
-if command -v pnpm &>/dev/null; then
-  echo "Updating global pnpm packages..."
-  pnpm outdated --global
-  pnpm update --global --latest
-  echo
-else
-  :
-fi
+# if command -v pnpm &>/dev/null; then
+#   echo "Updating global pnpm packages..."
+#   pnpm outdated --global
+#   pnpm update --global --latest
+#   echo
+# else
+#   :
+# fi
 
 # Check if uv is available in $PATH
 if command -v uv >/dev/null 2>&1; then
