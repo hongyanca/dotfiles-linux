@@ -1,213 +1,325 @@
 #!/usr/bin/env bash
 
-txtrst=$(tput sgr0)    # Text reset
-txtred=$(tput setaf 1) # Red
-txtgrn=$(tput setaf 2) # Green
-txtblu=$(tput setaf 4) # Blue
+set -euo pipefail
 
-# Get the CPU architecture
-ARCH=$(uname -m)
+#######################################
+# Constants
+#######################################
+readonly VERSION_NIGHTLY="nightly"
+readonly VERSION_PRERELEASE="prerelease"
+readonly VERSION_LATEST="latest"
 
-# Detect OS
-OS=$(uname -s)
+readonly GITHUB_API_URL="https://api.github.com/repos/neovim/neovim/releases"
+
+# Colors for output
+readonly COLOR_RESET=$(tput sgr0)
+readonly COLOR_RED=$(tput setaf 1)
+readonly COLOR_GREEN=$(tput setaf 2)
+readonly COLOR_BLUE=$(tput setaf 4)
+
+#######################################
+# System Detection
+####################################
+
+detect_system_info() {
+  ARCH=$(uname -m)
+  OS=$(uname -s)
+}
 
 # Set variables based on OS and architecture
-case "$OS-$ARCH" in
-"Darwin-x86_64")
-  INSTALL_DIR="$HOME/Applications/nvim-macos-x86_64"
-  PACKAGE_NAME="nvim-macos-x86_64.tar.gz"
-  ;;
-"Darwin-arm64")
-  INSTALL_DIR="$HOME/Applications/nvim-macos-arm64"
-  PACKAGE_NAME="nvim-macos-arm64.tar.gz"
-  ;;
-"Linux-x86_64")
-  INSTALL_DIR="$HOME/.local/nvim-linux-x86_64"
-  PACKAGE_NAME="nvim-linux-x86_64.tar.gz"
-  ;;
-"Linux-aarch64")
-  INSTALL_DIR="$HOME/.local/nvim-linux-arm64"
-  PACKAGE_NAME="nvim-linux-arm64.tar.gz"
-  ;;
-*)
-  echo "Unsupported OS or architecture: $OS-$ARCH"
-  exit 1
-  ;;
-esac
-# Add -nightly suffix to INSTALL_DIR for nightly/prerelease installations
-if [ "$1" = "nightly" ] || [ "$1" = "prerelease" ]; then
-  INSTALL_DIR="${INSTALL_DIR}-nightly"
-fi
-
-# INSTALL_DIR will be removed during installation, so ensure it's not HOME
-if [ "$OS" = "Darwin" ]; then
-  # realpath on macOS does not support -m option
-  if [ "$(realpath "$INSTALL_DIR")" = "$(realpath "$HOME")" ]; then
-    echo "Something went wrong. Installation directory cannot be HOME."
+set_install_paths() {
+  case "$OS-$ARCH" in
+  "Darwin-x86_64")
+    INSTALL_DIR="$HOME/Applications/nvim-macos-x86_64"
+    PACKAGE_NAME="nvim-macos-x86_64.tar.gz"
+    ;;
+  "Darwin-arm64")
+    INSTALL_DIR="$HOME/Applications/nvim-macos-arm64"
+    PACKAGE_NAME="nvim-macos-arm64.tar.gz"
+    ;;
+  "Linux-x86_64")
+    INSTALL_DIR="$HOME/.local/nvim-linux-x86_64"
+    PACKAGE_NAME="nvim-linux-x86_64.tar.gz"
+    ;;
+  "Linux-aarch64")
+    INSTALL_DIR="$HOME/.local/nvim-linux-arm64"
+    PACKAGE_NAME="nvim-linux-arm64.tar.gz"
+    ;;
+  *)
+    echo "Unsupported OS or architecture: $OS-$ARCH"
     exit 1
-  fi
-else
-  if [ "$(realpath -m "$INSTALL_DIR")" = "$(realpath -m "$HOME")" ]; then
-    echo "Something went wrong. Installation directory cannot be HOME."
-    exit 1
-  fi
-fi
+    ;;
+  esac
+}
 
-# GitHub API URL for Neovim releases
-GITHUB_API_URL="https://api.github.com/repos/neovim/neovim/releases"
-
-# Temporary file path for the downloaded package
-PACKAGE_PATH="/tmp/$PACKAGE_NAME"
-
-# Function to install a given version
-install_version() {
+add_nightly_suffix_if_needed() {
   local version_type="$1"
-  local download_url
-  local version
-  local display_version
-
-  if [ "$version_type" = "nightly" ] || [ "$version_type" = "prerelease" ]; then
-    # Fetch the JSON response using curl
-    response=$(curl -s "$GITHUB_API_URL")
-
-    # Extract the 'body' field of the latest prerelease and filter out the version string
-    version=$(echo "$response" | jq -r '.[] | select(.prerelease) | .body' | grep -Eo 'NVIM\s+\S+')
-    download_url=$(echo "$response" | jq -r ".[] | select(.prerelease) | .assets[] | select(.name == \"$PACKAGE_NAME\") | .browser_download_url" | head -n 1)
-    display_version="The latest Neovim $version_type version is: ${txtgrn}$version${txtrst}"
-  elif [ "$version_type" = "latest" ]; then
-    response=$(curl -s "$GITHUB_API_URL/latest")
-    version=$(echo "$response" | jq -r '.tag_name')
-    version="NVIM $version"
-    download_url=$(echo "$response" | jq -r ".assets[] | select(.name == \"$PACKAGE_NAME\") | .browser_download_url")
-    display_version="The latest Neovim release version is: ${txtgrn}$version${txtrst}"
-  else
-    echo "Invalid version type: $version_type"
-    return 1
-  fi
-
-  if [ -z "$version" ] || [ -z "$download_url" ]; then
-    echo "Could not determine download URL or version for $version_type"
-    echo
-    echo "If you see error like:"
-    echo "jq: error (at <stdin>:1): Cannot iterate over null (null)"
-    echo "You have reached the GitHub API rate limit."
-    echo "Please wait for a while and try again."
-    echo
-    return 1
-  fi
-
-  # Get installed Neovim version
-  if [ -x "$INSTALL_DIR"/bin/nvim ]; then
-    installed_version=$("$INSTALL_DIR"/bin/nvim --version | head -n 1 | grep -Eo 'NVIM\s+\S+')
-  else
-    installed_version=""
-  fi
-
-  echo "$display_version"
-  if [ "$version_type" = "nightly" ] || [ "$version_type" = "prerelease" ]; then
-    echo "Installed Neovim $version_type version is:  ${txtblu}$installed_version${txtrst}"
-  else
-    echo "Installed Neovim release version is:  ${txtblu}$installed_version${txtrst}"
-  fi
-
-  # Compare installed version with the latest prerelease version
-  if [ "$version" != "$installed_version" ]; then
-    if [ "$installed_version" = "" ]; then
-      echo "Neovim $version_type is not installed. Proceeding with installation..."
-    else
-      echo "The installed version is ${txtred}outdated${txtrst}. Installing the latest $version_type version..."
-    fi
-
-    if [ -n "$download_url" ]; then
-      echo "Downloading from $download_url..."
-
-      # Download the tarball to /tmp/$PACKAGE_NAME
-      curl -L -o "$PACKAGE_PATH" "$download_url"
-
-      # Extract the tarball to the installation directory
-      echo "Extracting Neovim to $INSTALL_DIR..."
-      if [ "$OS" = "Darwin" ]; then
-        xattr -c "$PACKAGE_PATH"
-      fi
-
-      rm -rf "$INSTALL_DIR"
-      mkdir -p "$INSTALL_DIR"
-
-      cd "/tmp" || exit
-      tar -xzf "$PACKAGE_PATH" -C "/tmp"
-      EXTRACTED_DIR=$(tar -tf "$PACKAGE_PATH" | head -n 1 | cut -f1 -d"/")
-      if [ "$version_type" = "nightly" ] || [ "$version_type" = "prerelease" ]; then
-        mv "/tmp/$EXTRACTED_DIR" "/tmp/$EXTRACTED_DIR-nightly"
-        mv "/tmp/$EXTRACTED_DIR-nightly" "$(dirname "$INSTALL_DIR")/"
-      else
-        mv "/tmp/$EXTRACTED_DIR" "$(dirname "$INSTALL_DIR")/"
-      fi
-
-      # Clean up
-      rm -rf "$PACKAGE_PATH"
-      if [ "$installed_version" = "" ]; then
-        echo "Neovim ${txtgrn}installed successfully${txtrst}."
-      else
-        echo "Neovim ${txtgrn}updated successfully${txtrst}."
-      fi
-
-      # Post-Installation Script
-      post_install_actions "$version" "$version_type"
-    else
-      echo "Could not find the download URL for $PACKAGE_NAME."
-    fi
-  else
-    echo "The installed version is ${txtgrn}up to date${txtrst}."
+  if is_nightly_or_prerelease "$version_type"; then
+    INSTALL_DIR="${INSTALL_DIR}-nightly"
   fi
 }
 
-# Function for post-installation actions
+#######################################
+# Helper Functions
+####################################
+
+is_nightly_or_prerelease() {
+  [[ "$1" == "$VERSION_NIGHTLY" || "$1" == "$VERSION_PRERELEASE" ]]
+}
+
+is_macos() {
+  [[ "$OS" == "Darwin" ]]
+}
+
+# INSTALL_DIR will be removed during installation, so ensure it's not HOME
+validate_install_dir_not_home() {
+  local install_dir_real
+  local home_real
+
+  # Create a temporary directory so realpath works (for fresh installs)
+  # This will be removed and recreated during the actual installation anyway
+  if [[ ! -d "$INSTALL_DIR" ]]; then
+    mkdir -p "$INSTALL_DIR"
+  fi
+
+  if is_macos; then
+    # realpath on macOS does not support -m option
+    install_dir_real=$(realpath "$INSTALL_DIR")
+    home_real=$(realpath "$HOME")
+  else
+    install_dir_real=$(realpath -m "$INSTALL_DIR")
+    home_real=$(realpath -m "$HOME")
+  fi
+
+  if [[ "$install_dir_real" == "$home_real" ]]; then
+    echo "Error: Installation directory cannot be HOME."
+    exit 1
+  fi
+}
+
+#######################################
+# Version Information Functions
+####################################
+
+fetch_nightly_version_info() {
+  local response
+  response=$(curl -s "$GITHUB_API_URL")
+
+  version=$(echo "$response" | jq -r '.[] | select(.prerelease) | .body' | grep -Eo 'NVIM\s+\S+')
+  download_url=$(echo "$response" | jq -r ".[] | select(.prerelease) | .assets[] | select(.name == \"$PACKAGE_NAME\") | .browser_download_url" | head -n 1)
+  display_version="The latest Neovim nightly version is: ${COLOR_GREEN}$version${COLOR_RESET}"
+}
+
+fetch_latest_version_info() {
+  local response
+  response=$(curl -s "$GITHUB_API_URL/latest")
+
+  version=$(echo "$response" | jq -r '.tag_name')
+  version="NVIM $version"
+  download_url=$(echo "$response" | jq -r ".assets[] | select(.name == \"$PACKAGE_NAME\") | .browser_download_url")
+  display_version="The latest Neovim release version is: ${COLOR_GREEN}$version${COLOR_RESET}"
+}
+
+get_installed_version() {
+  if [[ -x "$INSTALL_DIR/bin/nvim" ]]; then
+    "$INSTALL_DIR/bin/nvim" --version | head -n 1 | grep -Eo 'NVIM\s+\S+'
+  fi
+}
+
+print_version_info() {
+  local version_type="$1"
+  local installed_version="$2"
+
+  echo "$display_version"
+
+  if is_nightly_or_prerelease "$version_type"; then
+    echo "Installed Neovim nightly version is:  ${COLOR_BLUE}$installed_version${COLOR_RESET}"
+  else
+    echo "Installed Neovim release version is:  ${COLOR_BLUE}$installed_version${COLOR_RESET}"
+  fi
+}
+
+show_rate_limit_error() {
+  local version_type="$1"
+  echo "Error: Could not determine download URL or version for $version_type"
+  echo
+  echo "If you see an error like:"
+  echo "  jq: error (at <stdin>:1): Cannot iterate over null (null)"
+  echo "You have reached the GitHub API rate limit."
+  echo "Please wait for a while and try again."
+  echo
+  return 1
+}
+
+#######################################
+# Download and Installation Functions
+####################################
+
+download_neovim() {
+  local download_url="$1"
+  local package_path="/tmp/$PACKAGE_NAME"
+
+  echo "Downloading from $download_url..."
+  curl -L -o "$package_path" "$download_url"
+}
+
+extract_and_install_neovim() {
+  local version_type="$1"
+  local package_path="/tmp/$PACKAGE_NAME"
+
+  echo "Extracting Neovim to $INSTALL_DIR..."
+
+  # Clear macOS extended attributes to avoid quarantine warnings
+  if is_macos; then
+    xattr -c "$package_path"
+  fi
+
+  # Remove old installation and create fresh directory
+  rm -rf "$INSTALL_DIR"
+  mkdir -p "$INSTALL_DIR"
+
+  # Extract to /tmp first
+  cd "/tmp" || exit 1
+  tar -xzf "$package_path" -C "/tmp"
+
+  # Get the extracted directory name
+  local extracted_dir
+  extracted_dir=$(tar -tf "$package_path" | head -n 1 | cut -f1 -d"/")
+
+  # Move to final location with appropriate naming
+  if is_nightly_or_prerelease "$version_type"; then
+    mv "/tmp/$extracted_dir" "/tmp/${extracted_dir}-nightly"
+    mv "/tmp/${extracted_dir}-nightly" "$(dirname "$INSTALL_DIR")/"
+  else
+    mv "/tmp/$extracted_dir" "$(dirname "$INSTALL_DIR")/"
+  fi
+
+  # Clean up downloaded package
+  rm -rf "$package_path"
+}
+
+print_installation_success() {
+  local was_installed="$1"
+
+  if [[ -z "$was_installed" ]]; then
+    echo "Neovim ${COLOR_GREEN}installed successfully${COLOR_RESET}."
+  else
+    echo "Neovim ${COLOR_GREEN}updated successfully${COLOR_RESET}."
+  fi
+}
+
+#######################################
+# Main Installation Function
+####################################
+
+install_version() {
+  local version_type="$1"
+  local version
+  local download_url
+  local display_version
+
+  # Fetch version and download URL based on type
+  if is_nightly_or_prerelease "$version_type"; then
+    fetch_nightly_version_info
+  elif [[ "$version_type" == "$VERSION_LATEST" ]]; then
+    fetch_latest_version_info
+  else
+    echo "Error: Invalid version type: $version_type"
+    return 1
+  fi
+
+  # Validate we got the required information
+  if [[ -z "$version" || -z "$download_url" ]]; then
+    show_rate_limit_error "$version_type"
+    return 1
+  fi
+
+  # Get current installed version
+  local installed_version
+  installed_version=$(get_installed_version)
+
+  # Display version information
+  print_version_info "$version_type" "$installed_version"
+
+  # Check if update is needed
+  if [[ "$version" == "$installed_version" ]]; then
+    echo "The installed version is ${COLOR_GREEN}up to date${COLOR_RESET}."
+    return 0
+  fi
+
+  # Proceed with installation/update
+  if [[ -z "$installed_version" ]]; then
+    echo "Neovim $version_type is not installed. Proceeding with installation..."
+  else
+    echo "The installed version is ${COLOR_RED}outdated${COLOR_RESET}. Installing the latest $version_type version..."
+  fi
+
+  # Download and install
+  download_neovim "$download_url"
+  extract_and_install_neovim "$version_type"
+  print_installation_success "$installed_version"
+
+  # Run post-installation actions
+  post_install_actions "$version" "$version_type"
+}
+
+#######################################
+# Post-Installation Actions
+####################################
+
 post_install_actions() {
   local installed_version="$1"
   local version_type="$2"
-  # Print out green text "neovim VERSION_NUMBER has been installed to "$INSTALL_DIR"/bin/nvim
-  if [ -x "$INSTALL_DIR"/bin/nvim ]; then
-    echo "Neovim ${txtgrn}$installed_version${txtrst} has been installed to ${txtblu}$INSTALL_DIR/bin/nvim${txtrst}"
+
+  # Print installation location
+  if [[ -x "$INSTALL_DIR/bin/nvim" ]]; then
+    echo "Neovim ${COLOR_GREEN}$installed_version${COLOR_RESET} has been installed to ${COLOR_BLUE}$INSTALL_DIR/bin/nvim${COLOR_RESET}"
   fi
 
-  # Skip symlink creation for nightly/prerelease version
-  if [ "$version_type" = "nightly" ] || [ "$version_type" = "prerelease" ]; then
-    return
+  # Skip symlink creation for nightly/prerelease or on macOS
+  if is_nightly_or_prerelease "$version_type" || is_macos; then
+    return 0
   fi
 
-  # Don't create a symlink on macOS
-  if [ "$OS" = "Darwin" ]; then
-    return
-  fi
+  manage_system_symlink
+}
 
-  # Check if /usr/bin/nvim is a symlink
-  if [ -L "/usr/bin/nvim" ]; then
-    # Delete the existing symlink
+manage_system_symlink() {
+  # Remove existing symlink if present
+  if [[ -L "/usr/bin/nvim" ]]; then
     echo "Removing existing symlink /usr/bin/nvim"
     sudo rm "/usr/bin/nvim"
   fi
 
-  # Create a new symlink
-  if [ ! -L "/usr/bin/nvim" ]; then
+  # Create new symlink
+  if [[ ! -L "/usr/bin/nvim" ]]; then
     echo "Creating symlink /usr/bin/nvim to $INSTALL_DIR/bin/nvim"
     sudo ln -s "$INSTALL_DIR/bin/nvim" "/usr/bin/nvim"
   fi
 }
 
-# Check for command line argument
-if [ -n "$1" ]; then
-  case "$1" in
-  "nightly" | "prerelease")
-    install_version "$1"
-    ;;
-  "latest")
-    install_version "latest"
-    ;;
-  *)
-    echo "Invalid argument: $1. Use 'nightly', 'prerelease' or 'latest' or leave empty for latest release."
-    exit 1
-    ;;
+#######################################
+# Main Entry Point
+####################################
+
+main() {
+  detect_system_info
+  set_install_paths
+  add_nightly_suffix_if_needed "${1:-$VERSION_LATEST}"
+  validate_install_dir_not_home
+
+  local version_type="${1:-$VERSION_LATEST}"
+
+  case "$version_type" in
+    "$VERSION_NIGHTLY" | "$VERSION_PRERELEASE" | "$VERSION_LATEST")
+      install_version "$version_type"
+      ;;
+    *)
+      echo "Error: Invalid argument '$version_type'. Use 'nightly', 'prerelease', or 'latest'."
+      echo "Leaving empty defaults to 'latest'."
+      exit 1
+      ;;
   esac
-else
-  install_version "latest"
-fi
+}
+
+main "$@"
