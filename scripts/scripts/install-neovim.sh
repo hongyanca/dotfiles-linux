@@ -184,7 +184,7 @@ extract_and_install_neovim() {
 
   # Get the extracted directory name
   local extracted_dir
-  extracted_dir=$(tar -tf "$package_path" | head -n 1 | cut -f1 -d"/")
+  extracted_dir=$(tar -tf "$package_path" | sed -n '1s/\/.*//p')
 
   # Move to final location with appropriate naming
   if is_nightly_or_prerelease "$version_type"; then
