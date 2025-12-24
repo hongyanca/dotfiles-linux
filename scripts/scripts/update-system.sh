@@ -83,6 +83,16 @@ fi
 #   :
 # fi
 
+# Check if bun is available in $PATH
+if command -v bun &>/dev/null; then
+  bun upgrade
+  bun outdated -g
+  bun update --latest -g
+  echo
+else
+  :
+fi
+
 # Check if uv is available in $PATH
 if command -v uv >/dev/null 2>&1; then
   UV_PATH=$(which uv)
