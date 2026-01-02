@@ -59,50 +59,57 @@ sudo rm -rf /var/lib/cloud/instances
 
 ## Function to clear history for a specific shell
 clear_history() {
-    local shell_name="$1"
-    local history_file="$2"
-    local hist_command="$3"
-    local unset_vars="$4"
+  local shell_name="$1"
+  local history_file="$2"
+  local hist_command="$3"
+  local unset_vars="$4"
 
-    # 1. Clear the history file on the disk
-    if [ -f "$history_file" ]; then
-        echo "Clearing file: ${history_file}"
-        # Empty the file without deleting it (preserves permissions/inode)
-        >$history_file
-    else
-        echo "History file not found: ${history_file}"
-    fi
+  # 1. Clear the history file on the disk
+  if [ -f "$history_file" ]; then
+    echo "Clearing file: ${history_file}"
+    # Empty the file without deleting it (preserves permissions/inode)
+    >$history_file
+  else
+    echo "History file not found: ${history_file}"
+  fi
 
-    # 2. Clear the in-memory history for the current session
-    # Execute the history command
-    eval "$hist_command"
-    
-    # Unset related variables to prevent history from being saved when the script exits
-    if [ ! -z "$unset_vars" ]; then
-        for var in $unset_vars; do
-            unset "$var"
-            echo "Unset variable: $var"
-        done
-    fi
+  # 2. Clear the in-memory history for the current session
+  # Execute the history command
+  eval "$hist_command"
 
-    echo "Completed ${shell_name} history cleanup."
-    echo ""
+  # Unset related variables to prevent history from being saved when the script exits
+  if [ ! -z "$unset_vars" ]; then
+    for var in $unset_vars; do
+      unset "$var"
+      echo "Unset variable: $var"
+    done
+  fi
+
+  echo "Completed ${shell_name} history cleanup."
+  echo ""
 }
 
 # --- Bash History Cleanup ---
 clear_history \
-    "Bash" \
-    "$HOME/.bash_history" \
-    "history -c" \
-    "HISTFILE HISTSIZE HISTFILESIZE"
+  "Bash" \
+  "$HOME/.bash_history" \
+  "history -c" \
+  "HISTFILE HISTSIZE HISTFILESIZE"
 
 # --- Zsh History Cleanup ---
 clear_history \
-    "Zsh" \
-    "$HOME/.zsh_history" \
-    "history -p" \
-    "HISTFILE HISTSIZE SAVEHIST"
+  "Zsh" \
+  "$HOME/.zsh_history" \
+  "history -p" \
+  "HISTFILE HISTSIZE SAVEHIST"
 rm -f "$HOME/.zcompdump*"
+
+# Clear mise cache if available
+if command -v mise &>/dev/null; then
+  echo "Clearing mise cache..."
+  mise cache clear
+  echo
+fi
 
 # Check for the 'noshutdown' argument
 if [[ "$1" != "noshutdown" ]]; then

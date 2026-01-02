@@ -1,33 +1,84 @@
 #!/usr/bin/env bash
 
-# Set a flag to indicate dry-run mode
+set -euo pipefail
+
+# Constants
+readonly ENTRIES_DIR="/boot/loader/entries"
+readonly GRUB_CFG="/boot/grub2/grub.cfg"
+
+# Global state
 DRY_RUN=false
 
-# Function to display help message
+# =============================================================================
+# Helper Functions
+# =============================================================================
+
 show_help() {
-  echo "Usage: $0 [-d|--dry-run] [-h|--help]"
-  echo "Deletes old Linux kernels from the system."
-  echo ""
-  echo "Options:"
-  echo "  -d, --dry-run   : Perform a dry-run (show what would be removed without actually removing)."
-  echo "  -h, --help      : Show this help message."
+  cat <<EOF
+Usage: $0 [-d|--dry-run] [-h|--help]
+Deletes old Linux kernels from the system.
+
+Options:
+  -d, --dry-run   Perform a dry-run (show what would be removed without actually removing).
+  -h, --help      Show this help message.
+EOF
+  exit 0
+}
+
+die() {
+  echo "ERROR: $*" >&2
   exit 1
 }
 
-# Function to find old kernel hashes and return them as an array
-# Usage: mapfile -t old_hashes < <(find_old_boot_loader_entries)
-find_old_boot_loader_entries() {
-  local entries_dir="/boot/loader/entries"
+warn() {
+  echo "WARNING: $*" >&2
+}
+
+info() {
+  echo "$*"
+}
+
+# =============================================================================
+# Kernel Version Functions
+# =============================================================================
+
+get_current_kernel() {
+  uname -r
+}
+
+get_latest_installed_kernel() {
+  rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}\n' | sort -V | tail -n 1
+}
+
+check_kernel_version() {
+  local current_kernel latest_kernel
+  current_kernel=$(get_current_kernel)
+  latest_kernel=$(get_latest_installed_kernel)
+
+  if [[ "$current_kernel" != "$latest_kernel" ]]; then
+    warn "Current running kernel ($current_kernel) is not the latest installed kernel ($latest_kernel)."
+    die "Please reboot the server to boot into the latest kernel before removing old kernels."
+  fi
+}
+
+get_old_kernels() {
+  sudo dnf repoquery --installonly --latest-limit=-1
+}
+
+# =============================================================================
+# Boot Loader Entry Functions
+# =============================================================================
+
+find_old_boot_loader_hashes() {
+  local current_kernel current_conf ref_time
+  current_kernel=$(get_current_kernel)
 
   # Get all entries
-  mapfile -t entries < <(sudo ls -1 "$entries_dir")
+  local entries
+  mapfile -t entries < <(sudo ls -1 "$ENTRIES_DIR")
 
-  # Find current kernel version
-  local current_kernel
-  current_kernel=$(uname -r)
-
-  # Locate the reference .conf file for the current kernel
-  local current_conf=""
+  # Find config file for current kernel
+  current_conf=""
   for entry in "${entries[@]}"; do
     if [[ "$entry" == *"$current_kernel.conf" ]]; then
       current_conf="$entry"
@@ -36,20 +87,18 @@ find_old_boot_loader_entries() {
   done
 
   if [[ -z "$current_conf" ]]; then
-    echo "Error: Could not find entry for current kernel ($current_kernel) in $entries_dir" >&2
+    warn "Could not find entry for current kernel ($current_kernel) in $ENTRIES_DIR"
     return 1
   fi
 
-  # Get the modification time of the current kernel's config
-  local ref_time
-  ref_time=$(sudo stat -c %Y "$entries_dir/$current_conf")
+  # Get reference time from current kernel's config
+  ref_time=$(sudo stat -c %Y "$ENTRIES_DIR/$current_conf")
 
-  # Find old hashes
+  # Find hashes older than current kernel
   local old_hashes=()
   for entry in "${entries[@]}"; do
-    local file_path="$entries_dir/$entry"
     local file_time
-    file_time=$(sudo stat -c %Y "$file_path")
+    file_time=$(sudo stat -c %Y "$ENTRIES_DIR/$entry")
 
     if [[ "$file_time" -lt "$ref_time" ]]; then
       local hash="${entry%%-*}"
@@ -59,113 +108,217 @@ find_old_boot_loader_entries() {
     fi
   done
 
-  # Output each hash on a separate line for mapfile consumption
-  for hash in "${old_hashes[@]}"; do
-    echo "$hash"
-  done
+  printf '%s\n' "${old_hashes[@]}"
 }
 
-# Function to delete old boot loader entries by hash
-# Args: $1 = dry_run (true/false), $2... = hashes to delete
-del_old_boot_loader_entries() {
-  local dry_run="$1"
-  shift
-  local old_hashes=("$@")
-  local entries_dir="/boot/loader/entries"
+find_files_by_hash() {
+  local hash="$1"
+  sudo find "$ENTRIES_DIR" -maxdepth 1 -name "*${hash}*" -print0
+  sudo find /boot -maxdepth 1 -name "*${hash}*" -print0
+}
 
-  if [[ ${#old_hashes[@]} -eq 0 ]]; then
-    echo "No old kernel hashes found."
+delete_file() {
+  local file="$1"
+  if [[ "$DRY_RUN" == "true" ]]; then
+    info "[DRY-RUN] Would delete: $file"
+  else
+    info "Deleting: $file"
+    sudo rm -f "$file"
+  fi
+}
+
+# =============================================================================
+# Main Operations
+# =============================================================================
+
+remove_old_kernels() {
+  local old_kernels="$1"
+
+  if [[ -z "$old_kernels" ]]; then
     return 0
   fi
 
-  # Find and delete files with old hashes in /boot/loader/entries/ and /boot/
-  for hash in "${old_hashes[@]}"; do
-    # Delete from /boot/loader/entries/
-    while IFS= read -r -d '' file; do
-      if [[ "$dry_run" == "true" ]]; then
-        echo "[DRY-RUN] Would delete: $file"
-      else
-        echo "Deleting: $file"
-        sudo rm -f "$file"
-      fi
-    done < <(sudo find "$entries_dir" -maxdepth 1 -name "*${hash}*" -print0)
+  if [[ "$DRY_RUN" == "true" ]]; then
+    info "[DRY-RUN] Would remove kernels:"
+    echo "$old_kernels" | sed 's/^/  /'
+    return 0
+  fi
 
-    # Delete from /boot/
+  info "Removing old kernels..."
+  while IFS= read -r kernel; do
+    info "Removing: $kernel"
+    sudo dnf remove -y "$kernel"
+  done <<< "$old_kernels"
+}
+
+collect_files_to_delete() {
+  local current_kernel
+  current_kernel=$(get_current_kernel)
+
+  # Read hashes from stdin, output files to stdout
+  # Returns 1 if current kernel files would be affected
+  local hash
+  while IFS= read -r hash; do
+    [[ -z "$hash" ]] && continue
     while IFS= read -r -d '' file; do
-      if [[ "$dry_run" == "true" ]]; then
-        echo "[DRY-RUN] Would delete: $file"
-      else
-        echo "Deleting: $file"
-        sudo rm -f "$file"
+      echo "$file"
+      if [[ "$file" == *"$current_kernel"* ]]; then
+        return 1
       fi
-    done < <(sudo find /boot -maxdepth 1 -name "*${hash}*" -print0)
+    done < <(find_files_by_hash "$hash")
   done
 
-  echo "-----------------------------------"
-  if [[ "$dry_run" == "true" ]]; then
-    echo "Dry-run complete. No files were deleted."
+  return 0
+}
+
+confirm_deletion() {
+  local prompt="$1"
+  local response
+
+  read -r -p "$prompt [y/N] " response
+  case "$response" in
+    [yY]|[yY][eE][sS]) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+remove_boot_loader_entries() {
+  local hashes_input="$1"
+
+  if [[ -z "$hashes_input" ]]; then
+    info "No old boot loader entries to delete."
+    return 0
+  fi
+
+  # Collect files and check for safety
+  local files_output
+  if ! files_output=$(echo "$hashes_input" | collect_files_to_delete); then
+    local current_kernel
+    current_kernel=$(get_current_kernel)
+    die "Files for current kernel ($current_kernel) would be deleted! Aborting."
+  fi
+
+  if [[ -z "$files_output" ]]; then
+    info "No boot loader entry files found to delete."
+    return 0
+  fi
+
+  # Convert to array
+  local files_to_delete=()
+  while IFS= read -r file; do
+    [[ -n "$file" ]] && files_to_delete+=("$file")
+  done <<< "$files_output"
+
+  # Display files
+  info "The following boot loader files will be deleted:"
+  printf '  %s\n' "${files_to_delete[@]}"
+  echo ""
+  info "Current kernel ($(get_current_kernel)) is safe and will NOT be deleted."
+  echo ""
+
+  # Handle dry-run or confirm deletion
+  if [[ "$DRY_RUN" == "true" ]]; then
+    info "[DRY-RUN] No files were deleted."
+    return 0
+  fi
+
+  if ! confirm_deletion "Do you want to delete these files?"; then
+    info "Aborted. No files were deleted."
+    exit 0
+  fi
+
+  # Delete files
+  for file in "${files_to_delete[@]}"; do
+    delete_file "$file"
+  done
+
+  info "Old boot loader entries deleted."
+}
+
+update_grub() {
+  info "Updating GRUB configuration..."
+  sudo grub2-mkconfig -o "$GRUB_CFG"
+}
+
+show_remaining_entries() {
+  info "Remaining boot loader entries:"
+  sudo ls -1 "$ENTRIES_DIR"
+}
+
+run_dry_run() {
+  local old_kernels="$1"
+
+  info "Dry-run mode enabled."
+  echo ""
+
+  remove_old_kernels "$old_kernels"
+
+  info "Checking for old boot loader entry files..."
+  local old_hashes
+  old_hashes=$(find_old_boot_loader_hashes)
+  remove_boot_loader_entries "$old_hashes"
+
+  echo ""
+  info "To actually remove the kernels, run without the '-d' or '--dry-run' option."
+}
+
+run_removal() {
+  local old_kernels="$1"
+
+  # Get old boot loader hashes
+  local old_hashes
+  old_hashes=$(find_old_boot_loader_hashes)
+
+  # Check if there's anything to remove
+  if [[ -z "$old_kernels" ]] && [[ -z "$old_hashes" ]]; then
+    info "No old kernels or boot loader entries found to remove."
+    exit 0
+  fi
+
+  # Remove old kernels via dnf
+  remove_old_kernels "$old_kernels"
+
+  # Remove old boot loader entries
+  remove_boot_loader_entries "$old_hashes"
+
+  info "Old kernels removal complete."
+
+  # Update GRUB and show results
+  update_grub
+  show_remaining_entries
+}
+
+parse_args() {
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -d|--dry-run)
+        DRY_RUN=true
+        shift
+        ;;
+      -h|--help)
+        show_help
+        ;;
+      *)
+        die "Invalid argument: $1. Use -h for help."
+        ;;
+    esac
+  done
+}
+
+main() {
+  parse_args "$@"
+
+  check_kernel_version
+
+  info "Retrieving list of old kernels..."
+  local old_kernels
+  old_kernels=$(get_old_kernels)
+
+  if [[ "$DRY_RUN" == "true" ]]; then
+    run_dry_run "$old_kernels"
   else
-    echo "Old kernel files deletion complete."
+    run_removal "$old_kernels"
   fi
 }
 
-# Process command line arguments
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-  -d | --dry-run)
-    DRY_RUN=true
-    shift
-    ;;
-  -h | --help)
-    show_help
-    ;;
-  *)
-    echo "Invalid argument: $1"
-    show_help
-    ;;
-  esac
-done
-
-echo "Retrieving list of old kernels..."
-# Get a list of old kernels to remove
-OLD_KERNELS=$(sudo dnf repoquery --installonly --latest-limit=-1)
-
-# Output if in dry-run mode
-if [[ "$DRY_RUN" == "true" ]]; then
-  echo "Dry-run mode enabled."
-  if [[ -n "$OLD_KERNELS" ]]; then
-    echo "[DRY-RUN] Would delete: $OLD_KERNELS"
-  fi
-  echo "Checking for old boot loader entry files..."
-  mapfile -t old_hashes < <(find_old_boot_loader_entries)
-  del_old_boot_loader_entries "true" "${old_hashes[@]}"
-  echo ""
-  echo "To actually remove the kernels, run the script without the '-d' or '--dry-run' option."
-  exit 0
-fi
-
-# Check if any old kernels or boot loader entries were found
-mapfile -t old_hashes < <(find_old_boot_loader_entries)
-if [[ -z "$OLD_KERNELS" ]] && [[ ${#old_hashes[@]} -eq 0 ]]; then
-  echo "No old kernels or boot loader entries found to remove."
-  exit 0
-fi
-
-# Loop through each old kernel and remove it
-if [[ -n "$OLD_KERNELS" ]]; then
-  echo "Removing old kernels..."
-  while IFS= read -r kernel; do
-    echo "Removing: $kernel"
-    sudo dnf remove -y "$kernel"
-  done <<<"$OLD_KERNELS"
-fi
-
-echo "Deleting old boot loader entries..."
-del_old_boot_loader_entries "false" "${old_hashes[@]}"
-
-echo "Old kernels removal complete."
-
-sudo grub2-mkconfig -o /boot/grub2/grub.cfg
-
-echo "List of boot loader entries:"
-sudo find "/boot/loader/entries" -maxdepth 1 | tail -n +2
+main "$@"
