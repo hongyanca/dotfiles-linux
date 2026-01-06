@@ -81,6 +81,13 @@ if [[ -f "$HOME/.local/share/pnpm/pnpm" ]]; then
 fi
 # pnpm end
 
+# bun
+if [[ -f "$HOME/.bun/bin/bun" ]]; then
+    export BUN_INSTALL="$HOME/.bun"
+    export PATH="$BUN_INSTALL/bin:$PATH"
+    [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+fi
+
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 source ~/.p10k/powerlevel10k.zsh-theme

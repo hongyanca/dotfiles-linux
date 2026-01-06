@@ -58,7 +58,7 @@ end
 set -x NPM_PACKAGES "$HOME/.npm-packages"
 
 # Set $PATH
-set -x PATH $PATH $NPM_PACKAGES/bin $HOME/.local/bin $HOME/scripts
+set -x PATH $NPM_PACKAGES/bin $HOME/.local/bin $HOME/scripts $PATH
 
 # pnpm
 if test -f "$HOME/.local/share/pnpm/pnpm"
@@ -69,3 +69,9 @@ if test -f "$HOME/.local/share/pnpm/pnpm"
     alias pn='pnpm'
 end
 # pnpm end
+
+# bun
+if test -f "$HOME/.bun/bin/bun"
+    set -gx BUN_INSTALL "$HOME/.bun"
+    set -gx PATH "$BUN_INSTALL/bin" $PATH
+end
