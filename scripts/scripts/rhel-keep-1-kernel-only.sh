@@ -62,15 +62,29 @@ check_kernel_version() {
 }
 
 get_old_kernels() {
-  sudo dnf repoquery --installonly --latest-limit=-1
+  sudo dnf repoquery --installonly --installed --latest-limit=-1
 }
 
 # =============================================================================
 # Boot Loader Entry Functions
 # =============================================================================
 
-find_old_boot_loader_hashes() {
-  local current_kernel current_conf ref_time
+extract_kernel_version_from_entry() {
+  local entry="$1"
+  if [[ "$entry" =~ ^[[:xdigit:]]{32}-(.+)\.conf$ ]]; then
+    printf '%s\n' "${BASH_REMATCH[1]}"
+    return 0
+  fi
+  return 1
+}
+
+is_rescue_kernel_identifier() {
+  local kernel_version="$1"
+  [[ "$kernel_version" == 0-rescue* ]]
+}
+
+find_old_boot_loader_kernels() {
+  local current_kernel current_conf ref_time current_entry_prefix
   current_kernel=$(get_current_kernel)
 
   # Get all entries
@@ -90,31 +104,96 @@ find_old_boot_loader_hashes() {
     warn "Could not find entry for current kernel ($current_kernel) in $ENTRIES_DIR"
     return 1
   fi
+  current_entry_prefix="${current_conf%%-*}"
 
   # Get reference time from current kernel's config
   ref_time=$(sudo stat -c %Y "$ENTRIES_DIR/$current_conf")
 
-  # Find hashes older than current kernel
-  local old_hashes=()
+  # Find kernel versions older than current kernel entry
+  local old_kernels=()
   for entry in "${entries[@]}"; do
     local file_time
     file_time=$(sudo stat -c %Y "$ENTRIES_DIR/$entry")
 
     if [[ "$file_time" -lt "$ref_time" ]]; then
-      local hash="${entry%%-*}"
-      if [[ ! " ${old_hashes[*]} " =~ " ${hash} " ]]; then
-        old_hashes+=("$hash")
+      local kernel_version
+      if ! kernel_version=$(extract_kernel_version_from_entry "$entry"); then
+        continue
+      fi
+      if is_rescue_kernel_identifier "$kernel_version"; then
+        continue
+      fi
+      if [[ "$kernel_version" == "$current_kernel" ]]; then
+        continue
+      fi
+      if [[ ! " ${old_kernels[*]} " =~ " ${kernel_version} " ]]; then
+        old_kernels+=("$kernel_version")
       fi
     fi
   done
 
-  printf '%s\n' "${old_hashes[@]}"
+  printf '%s\n' "${old_kernels[@]}"
 }
 
-find_files_by_hash() {
-  local hash="$1"
-  sudo find "$ENTRIES_DIR" -maxdepth 1 -name "*${hash}*" -print0
-  sudo find /boot -maxdepth 1 -name "*${hash}*" -print0
+find_stale_rescue_files() {
+  local current_kernel current_conf current_entry_prefix
+  current_kernel=$(get_current_kernel)
+
+  local entries
+  mapfile -t entries < <(sudo ls -1 "$ENTRIES_DIR")
+
+  current_conf=""
+  for entry in "${entries[@]}"; do
+    if [[ "$entry" == *"$current_kernel.conf" ]]; then
+      current_conf="$entry"
+      break
+    fi
+  done
+
+  if [[ -z "$current_conf" ]]; then
+    warn "Could not determine current boot entry prefix for rescue file cleanup."
+    return 1
+  fi
+  current_entry_prefix="${current_conf%%-*}"
+
+  local entry rescue_prefix
+  for entry in "${entries[@]}"; do
+    if [[ ! "$entry" =~ ^[[:xdigit:]]{32}-0-rescue\.conf$ ]]; then
+      continue
+    fi
+    rescue_prefix="${entry%%-*}"
+    if [[ "$rescue_prefix" == "$current_entry_prefix" ]]; then
+      continue
+    fi
+
+    printf '%s\n' "$ENTRIES_DIR/$entry"
+
+    if [[ -e "/boot/initramfs-0-rescue-${rescue_prefix}.img" ]]; then
+      printf '%s\n' "/boot/initramfs-0-rescue-${rescue_prefix}.img"
+    fi
+    if [[ -e "/boot/vmlinuz-0-rescue-${rescue_prefix}" ]]; then
+      printf '%s\n' "/boot/vmlinuz-0-rescue-${rescue_prefix}"
+    fi
+    if [[ -e "/boot/.vmlinuz-0-rescue-${rescue_prefix}.hmac" ]]; then
+      printf '%s\n' "/boot/.vmlinuz-0-rescue-${rescue_prefix}.hmac"
+    fi
+  done
+}
+
+find_files_by_kernel() {
+  local kernel_version="$1"
+  if is_rescue_kernel_identifier "$kernel_version"; then
+    return 0
+  fi
+
+  sudo find "$ENTRIES_DIR" -maxdepth 1 -type f -name "*-${kernel_version}.conf" -print0
+  sudo find /boot -maxdepth 1 -type f \
+    \( -name "vmlinuz-${kernel_version}" \
+    -o -name "System.map-${kernel_version}" \
+    -o -name "config-${kernel_version}" \
+    -o -name "symvers-${kernel_version}*" \
+    -o -name "initramfs-${kernel_version}*.img" \) \
+    -print0
 }
 
 delete_file() {
@@ -146,6 +225,7 @@ remove_old_kernels() {
 
   info "Removing old kernels..."
   while IFS= read -r kernel; do
+    [[ -z "$kernel" ]] && continue
     info "Removing: $kernel"
     sudo dnf remove -y "$kernel"
   done <<< "$old_kernels"
@@ -155,17 +235,17 @@ collect_files_to_delete() {
   local current_kernel
   current_kernel=$(get_current_kernel)
 
-  # Read hashes from stdin, output files to stdout
+  # Read kernel versions from stdin, output files to stdout
   # Returns 1 if current kernel files would be affected
-  local hash
-  while IFS= read -r hash; do
-    [[ -z "$hash" ]] && continue
+  local kernel_version
+  while IFS= read -r kernel_version; do
+    [[ -z "$kernel_version" ]] && continue
     while IFS= read -r -d '' file; do
       echo "$file"
       if [[ "$file" == *"$current_kernel"* ]]; then
         return 1
       fi
-    done < <(find_files_by_hash "$hash")
+    done < <(find_files_by_kernel "$kernel_version")
   done
 
   return 0
@@ -183,19 +263,21 @@ confirm_deletion() {
 }
 
 remove_boot_loader_entries() {
-  local hashes_input="$1"
-
-  if [[ -z "$hashes_input" ]]; then
-    info "No old boot loader entries to delete."
-    return 0
-  fi
+  local kernels_input="$1"
 
   # Collect files and check for safety
-  local files_output
-  if ! files_output=$(echo "$hashes_input" | collect_files_to_delete); then
+  local files_output stale_rescue_output
+  if ! files_output=$(echo "$kernels_input" | collect_files_to_delete); then
     local current_kernel
     current_kernel=$(get_current_kernel)
     die "Files for current kernel ($current_kernel) would be deleted! Aborting."
+  fi
+
+  if ! stale_rescue_output=$(find_stale_rescue_files); then
+    die "Failed to identify stale rescue boot artifacts."
+  fi
+  if [[ -n "$stale_rescue_output" ]]; then
+    files_output+=$'\n'"$stale_rescue_output"
   fi
 
   if [[ -z "$files_output" ]]; then
@@ -203,10 +285,16 @@ remove_boot_loader_entries() {
     return 0
   fi
 
-  # Convert to array
+  # Convert to de-duplicated array
   local files_to_delete=()
+  declare -A seen_files=()
   while IFS= read -r file; do
-    [[ -n "$file" ]] && files_to_delete+=("$file")
+    [[ -z "$file" ]] && continue
+    if [[ -n "${seen_files[$file]+x}" ]]; then
+      continue
+    fi
+    seen_files["$file"]=1
+    files_to_delete+=("$file")
   done <<< "$files_output"
 
   # Display files
@@ -254,9 +342,11 @@ run_dry_run() {
   remove_old_kernels "$old_kernels"
 
   info "Checking for old boot loader entry files..."
-  local old_hashes
-  old_hashes=$(find_old_boot_loader_hashes)
-  remove_boot_loader_entries "$old_hashes"
+  local old_boot_kernels
+  if ! old_boot_kernels=$(find_old_boot_loader_kernels); then
+    die "Failed to identify old boot loader entries."
+  fi
+  remove_boot_loader_entries "$old_boot_kernels"
 
   echo ""
   info "To actually remove the kernels, run without the '-d' or '--dry-run' option."
@@ -265,12 +355,17 @@ run_dry_run() {
 run_removal() {
   local old_kernels="$1"
 
-  # Get old boot loader hashes
-  local old_hashes
-  old_hashes=$(find_old_boot_loader_hashes)
+  # Get old boot loader kernel versions
+  local old_boot_kernels stale_rescue_files
+  if ! old_boot_kernels=$(find_old_boot_loader_kernels); then
+    die "Failed to identify old boot loader entries."
+  fi
+  if ! stale_rescue_files=$(find_stale_rescue_files); then
+    die "Failed to identify stale rescue boot artifacts."
+  fi
 
   # Check if there's anything to remove
-  if [[ -z "$old_kernels" ]] && [[ -z "$old_hashes" ]]; then
+  if [[ -z "$old_kernels" ]] && [[ -z "$old_boot_kernels" ]] && [[ -z "$stale_rescue_files" ]]; then
     info "No old kernels or boot loader entries found to remove."
     exit 0
   fi
@@ -279,7 +374,7 @@ run_removal() {
   remove_old_kernels "$old_kernels"
 
   # Remove old boot loader entries
-  remove_boot_loader_entries "$old_hashes"
+  remove_boot_loader_entries "$old_boot_kernels"
 
   info "Old kernels removal complete."
 
