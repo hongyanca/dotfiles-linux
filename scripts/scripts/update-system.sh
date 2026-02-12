@@ -65,26 +65,28 @@ else
   exit 1
 fi
 
-# Check if npm-check is available in $PATH
-if command -v npm-check &>/dev/null; then
-  npm-check --global --update-all
+# Update global npm packages if npm and npx are available
+if command -v npm >/dev/null 2>&1; then
+  echo 'Updating global npm packages...'
+  if ! command -v npm-check-updates >/dev/null 2>&1; then
+    echo "npm-check-updates not found. Installing globally..."
+    npm install -g npm-check-updates
+  fi
+  NCU_OUTPUT=$(npm-check-updates -g)
+  if echo "$NCU_OUTPUT" | grep -q 'packages are up-to-date'; then
+    echo 'All global packages are up-to-date :)'
+  else
+    echo "$NCU_OUTPUT"
+    npm update -g
+  fi
   echo
 else
   :
 fi
 
-# Check if pnpm is available in $PATH
-# if command -v pnpm &>/dev/null; then
-#   echo "Updating global pnpm packages..."
-#   pnpm outdated --global
-#   pnpm update --global --latest
-#   echo
-# else
-#   :
-# fi
-
 # Check if bun is available in $PATH
 if command -v bun &>/dev/null; then
+  echo 'Updating bun and global packages...'
   bun upgrade
   bun outdated -g
   bun update --latest -g
