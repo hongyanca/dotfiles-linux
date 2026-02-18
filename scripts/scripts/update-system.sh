@@ -80,8 +80,6 @@ if command -v npm >/dev/null 2>&1; then
     npm update -g --loglevel=error
   fi
   echo
-else
-  :
 fi
 
 # Check if bun is available in $PATH
@@ -91,8 +89,17 @@ if command -v bun &>/dev/null; then
   bun outdated -g
   bun update --latest -g
   echo
-else
-  :
+fi
+
+# Update mise and tools
+if command -v mise >/dev/null 2>&1; then
+  if mise self-update -y; then
+    :
+  else
+    curl https://mise.run | sh
+  fi
+  mise up -y
+  mise prune -y
 fi
 
 # Check if uv is available in $PATH
@@ -104,17 +111,6 @@ if command -v uv >/dev/null 2>&1; then
   else
     uv self update && uv tool upgrade --all
   fi
-else
-  :
-fi
-
-# Update mise and tools
-if command -v mise >/dev/null 2>&1; then
-  mise self-update -y
-  mise up -y
-  mise prune -y
-else
-  :
 fi
 
 echo -e "${GREEN}"
