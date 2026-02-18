@@ -77,7 +77,7 @@ if command -v npm >/dev/null 2>&1; then
     echo 'All global packages are up-to-date :)'
   else
     echo "$NCU_OUTPUT"
-    npm update -g
+    npm update -g --loglevel=error
   fi
   echo
 else
