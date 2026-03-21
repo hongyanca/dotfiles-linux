@@ -23,7 +23,7 @@
 [core]
     editor = nvim
     pager = delta
-	  ignorecase = false
+    ignorecase = false
     excludesfile = ~/.gitignore_global
 
 [interactive]

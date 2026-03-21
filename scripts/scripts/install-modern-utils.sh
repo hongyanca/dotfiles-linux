@@ -185,7 +185,7 @@ install_latest_release_from_gh() {
 function install_git-delta() {
   install_latest_release_from_gh "dandavison/delta" \
     "delta --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'" \
-    "x86_64-unknown-linux-gnu.tar.gz"
+    "x86_64-unknown-linux-musl.tar.gz"
 }
 function install_fzf() {
   install_latest_release_from_gh "junegunn/fzf" \
