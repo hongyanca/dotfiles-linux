@@ -4,7 +4,7 @@
 current_kernel=$(uname -r)
 
 # Get the list of installed kernels
-installed_kernels=$(dpkg --list | grep linux-image | awk '{ print $2 }' | grep -Eo '6\.[0-9]+\.[0-9]+-[0-9]+-generic' | sort -V)
+installed_kernels=$(dpkg --list | grep linux-image | awk '{ print $2 }' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+-[0-9]+-generic' | sort -V)
 
 # Define how many latest kernels to keep
 keep_latest=1
