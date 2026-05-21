@@ -50,7 +50,7 @@ install_required_dependencies() {
   elif [[ $LINUX_DISTRO == "debian" ]]; then
     echo "Detected Debian-based distribution. Using apt-get to install packages."
     sudo apt-get update
-    sudo apt-get install -y git gpg wget curl tar jq unzip bzip2 bash-completion dialog
+    sudo apt-get install -y git gpg wget curl tar jq unzip bzip2 bash-completion dialog login
   elif [[ $LINUX_DISTRO == "arch" ]]; then
     echo "Detected Arch-based distribution. Using pacman to install packages."
     sudo pacman -S --needed --noconfirm archlinux-keyring

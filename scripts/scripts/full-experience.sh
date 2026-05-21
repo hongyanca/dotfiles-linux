@@ -44,15 +44,17 @@ install_required_dependencies() {
     sudo dnf upgrade --refresh -y
     # Must manually instal GNU stow, xclip, zsh-syntax-highlighting on RHEL-based distributions
     cd /tmp || exit 1
-    wget https://rpmfind.net/linux/fedora/linux/releases/43/Everything/x86_64/os/Packages/s/stow-2.4.1-3.fc43.noarch.rpm
-    sudo yum localinstall -y stow-2.4.1-3.fc43.noarch.rpm
-    wget https://rpmfind.net/linux/opensuse/distribution/leap/15.6/repo/oss/x86_64/xclip-0.13-150400.9.3.1.x86_64.rpm
-    wget https://rpmfind.net/linux/fedora/linux/releases/43/Everything/x86_64/os/Packages/z/zsh-syntax-highlighting-0.8.0-6.fc43.noarch.rpm
-    sudo yum localinstall -y xclip-0.13-150400.9.3.1.x86_64.rpm zsh-syntax-highlighting-0.8.0-6.fc43.noarch.rpm
+    wget https://www.rpmfind.net/linux/epel/10.2/Everything/x86_64/Packages/s/stow-2.4.1-4.el10_2.noarch.rpm
+    sudo yum localinstall -y stow-2.4.1-4.el10_2.noarch.rpm
+    wget https://www.rpmfind.net/linux/opensuse/distribution/leap/15.6/repo/oss/x86_64/xclip-0.13-150400.9.3.1.x86_64.rpm
+    wget https://www.rpmfind.net/linux/fedora/linux/releases/44/Everything/x86_64/os/Packages/z/zsh-syntax-highlighting-0.8.0-7.fc44.noarch.rpm
+    sudo yum localinstall -y xclip-0.13-150400.9.3.1.x86_64.rpm zsh-syntax-highlighting-0.8.0-7.fc44.noarch.rpm
+    # Add Node.js source
+    curl -fsSL https://rpm.nodesource.com/setup_24.x | sudo bash -
     # Install basic packages.
     sudo dnf install -y wget curl zsh fish tar jq unzip bzip2 make git sqlite-devel \
       yum-utils gcc make python3-pip p7zip util-linux-user bat btop gdu gpg \
-      zlib-devel openssl-devel readline-devel libffi-devel xz-devel bzip2-devel
+      zlib-devel openssl-devel readline-devel libffi-devel xz-devel bzip2-devel nodejs
     python3 -m pip install --upgrade pip
     python3 -m pip install --user --upgrade pynvim
   elif [[ $LINUX_DISTRO == "fedora" ]]; then
@@ -62,16 +64,18 @@ install_required_dependencies() {
     sudo dnf install -y wget curl zsh fish stow tar jq unzip bzip2 make git xclip \
       yum-utils gcc make python3-pip p7zip util-linux-user zsh-syntax-highlighting \
       zlib-devel openssl-devel readline-devel libffi-devel xz-devel bzip2-devel \
-      sqlite-devel bat btop gdu gpg
+      sqlite-devel bat btop gdu gpg nodejs
     python3 -m pip install --upgrade pip
     python3 -m pip install --user --upgrade pynvim
   elif [[ $LINUX_DISTRO == "debian" ]]; then
     echo "Detected Debian-based distribution. Using apt-get to install packages."
+    # Add Node.js source
+    curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
     sudo apt-get update
     sudo apt-get install -y wget curl zsh fish stow tar jq unzip bzip2 make git xclip \
       gcc make libbz2-dev python3-pip p7zip passwd zsh-syntax-highlighting \
       build-essential libssl-dev zlib1g-dev libreadline-dev libsqlite3-dev \
-      bat btop gdu gpg
+      bat btop gdu gpg nodejs
     # bat will be installed as batcat
     sudo rm -f /usr/local/bin/bat
     sudo ln -s /usr/bin/batcat /usr/local/bin/bat
@@ -84,7 +88,7 @@ install_required_dependencies() {
     sudo pacman -S --needed --noconfirm wget curl zsh fish stow tar jq git xclip \
       gcc make python python-pip p7zip unzip util-linux zsh-syntax-highlighting \
       openssl python-pyopenssl zlib readline libffi xz bzip2 sqlite \
-      bat btop gdu gnupg
+      bat btop gdu gnupg nodejs
     sudo rm -f /usr/share/zsh-syntax-highlighting
     sudo ln -s /usr/share/zsh/plugins/zsh-syntax-highlighting /usr/share/zsh-syntax-highlighting
     python3 -m pip install --upgrade pip --break-system-packages
@@ -100,11 +104,9 @@ install_required_dependencies
 curl https://mise.run | sh
 eval "$(~/.local/bin/mise activate bash)"
 mise i uv
-# Install Node.js via mise and set up npm global packages directory
+# Set up npm global packages directory
 rm -f "$HOME/.npmrc"
 mkdir "$HOME/.npm-packages"
-mise use --global node@24
-eval "$(~/.local/bin/mise activate bash)"
 npm config set prefix "$HOME/.npm-packages"
 npm install -g tree-sitter-cli neovim pyright npm-check npm
 
