@@ -55,6 +55,11 @@ install_required_dependencies() {
     sudo dnf install -y wget curl zsh fish tar jq unzip bzip2 make git sqlite-devel \
       yum-utils gcc make python3-pip p7zip util-linux-user bat btop gdu gpg \
       zlib-devel openssl-devel readline-devel libffi-devel xz-devel bzip2-devel nodejs
+    # Fix CA root certificate
+    sudo dnf reinstall ca-certificates -y
+    sudo update-ca-trust
+    sudo mkdir -p /etc/ssl/certs
+    sudo ln -s /etc/pki/tls/certs/ca-bundle.crt /etc/ssl/certs/ca-certificates.crt
     python3 -m pip install --upgrade pip
     python3 -m pip install --user --upgrade pynvim
   elif [[ $LINUX_DISTRO == "fedora" ]]; then
