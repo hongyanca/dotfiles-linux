@@ -86,6 +86,8 @@ install_required_dependencies() {
     sudo ln -s /usr/bin/batcat /usr/local/bin/bat
     python3 -m pip install --upgrade pip --break-system-packages
     python3 -m pip install --user --upgrade pynvim --break-system-packages
+    # Ubuntu 26.04 will install neovim v0.11.x
+    sudo apt-get remove -y neovim
   elif [[ $LINUX_DISTRO == "arch" ]]; then
     echo "Detected Arch-based distribution. Using pacman to install packages."
     sudo pacman -S --needed --noconfirm archlinux-keyring
