@@ -111,6 +111,27 @@ if command -v mise &>/dev/null; then
   echo
 fi
 
+# Clear uv cache if available
+if command -v uv &>/dev/null; then
+  echo "Clearing uv cache..."
+  uv cache clean
+  echo
+fi
+
+# Clear bun cache if available
+if command -v bun &>/dev/null; then
+  echo "Clearing bun cache..."
+  bun pm cache rm -g
+  echo
+fi
+
+# Clear npm cache if available
+if command -v npm &>/dev/null; then
+  echo "Clearing npm cache..."
+  npm cache clean --force
+  echo
+fi
+
 # Check for the 'noshutdown' argument
 if [[ "$1" != "noshutdown" ]]; then
   echo "Shutting down system in 3 seconds..."
