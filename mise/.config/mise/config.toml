@@ -2,5 +2,9 @@
 idiomatic_version_file_enable_tools = ["python"]
 experimental = true
 
+[settings.python]
+compile = false
+uv_venv_auto = "source"
+
 [tools]
 uv = "latest"
